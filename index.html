@@ -20,6 +20,17 @@
   --shadow: 4px 4px 0px var(--black);
   --shadow-lg: 6px 6px 0px var(--black);
 }
+body[data-theme="dark"] {
+  --black: #eee6d8;
+  --white: #171716;
+  --yellow: #ffe66b;
+  --red: #ff4b4b;
+  --green: #35d071;
+  --blue: #4f83ff;
+  --border: 2px solid rgba(238,230,216,.78);
+  --shadow: 3px 3px 0px rgba(238,230,216,.28);
+  --shadow-lg: 4px 4px 0px rgba(238,230,216,.34);
+}
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
   font-family: 'Martian Mono', monospace;
@@ -27,6 +38,10 @@ body {
   color: var(--black);
   min-height: 100dvh;
   overscroll-behavior: none;
+}
+body[data-theme="dark"] {
+  background: #0b0b0a;
+  color: #eee6d8;
 }
 h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
 
@@ -47,6 +62,9 @@ h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
 .nav-btn:last-child { border-right: none; }
 .nav-btn.active { color: var(--yellow); }
 .nav-btn svg { width: 22px; height: 22px; stroke-width: 2px; }
+body[data-theme="dark"] .navbar { background: #11110f; border-top-color: rgba(238,230,216,.6); }
+body[data-theme="dark"] .nav-btn { color: #7d786f; border-right-color: #27241f; }
+body[data-theme="dark"] .nav-btn.active { color: var(--yellow); }
 
 /* MAIN */
 .main { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; }
@@ -107,6 +125,12 @@ h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
 .btn-white { background: var(--white); color: var(--black); }
 .btn-blue { background: var(--blue); color: var(--white); }
 .btn-full { width: 100%; justify-content: center; }
+body[data-theme="dark"] .btn { box-shadow: 3px 3px 0 rgba(238,230,216,.26); }
+body[data-theme="dark"] .btn-blue { background:#4f83ff; color:#fff; }
+body[data-theme="dark"] .btn-red { background:#ff4b4b; color:#fff; }
+body[data-theme="dark"] .btn-green { background:#35d071; color:#071109; }
+body[data-theme="dark"] .btn-white { background:#211f1b; color:#eee6d8; }
+body[data-theme="dark"] .btn-black { background:#eee6d8; color:#11110f; }
 
 /* FAB */
 .fab {
@@ -155,6 +179,14 @@ h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
   box-shadow: 3px 3px 0 var(--black);
 }
 .input:focus { background: #fffde0; }
+body[data-theme="dark"] .input:focus { background: #191919; }
+body[data-theme="dark"] .label,
+body[data-theme="dark"] .stat-label,
+body[data-theme="dark"] [style*="color:'#666'"],
+body[data-theme="dark"] [style*="color:#666"],
+body[data-theme="dark"] [style*="color: '#666'"] {
+  color: #9b9488 !important;
+}
 .label {
   font-family: 'Unbounded', cursive; font-size: 10px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .05em;
@@ -218,12 +250,77 @@ h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
   box-shadow: 3px 3px 0 var(--black);
 }
 .check-row.checked { background: #e8ffe8; }
+body[data-theme="dark"] .check-row.checked { background: #102a16; }
 .check-box {
   width: 24px; height: 24px; border: var(--border); border-radius: 3px;
   display: flex; align-items: center; justify-content: center;
   background: var(--white); flex-shrink: 0;
 }
 .check-box.checked { background: var(--green); }
+
+.theme-toggle {
+  min-width: 42px; height: 36px; padding: 0;
+  justify-content: center;
+}
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .lesson-card,
+body[data-theme="dark"] .stat-card,
+body[data-theme="dark"] .student-item,
+body[data-theme="dark"] .modal,
+body[data-theme="dark"] .input,
+body[data-theme="dark"] .toggle-opt,
+body[data-theme="dark"] .check-row,
+body[data-theme="dark"] .check-box,
+body[data-theme="dark"] .day-btn {
+  background: #171716;
+  color: #eee6d8;
+}
+body[data-theme="dark"] .lesson-time,
+body[data-theme="dark"] .card-header,
+body[data-theme="dark"] .toggle-opt.active,
+body[data-theme="dark"] .day-btn.active {
+  background: #eee6d8;
+  color: #11110f;
+}
+body[data-theme="dark"] .lesson-tag,
+body[data-theme="dark"] .badge {
+  border-color: rgba(238,230,216,.82);
+}
+body[data-theme="dark"] .lesson-card,
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .stat-card,
+body[data-theme="dark"] .student-item {
+  box-shadow: 3px 3px 0 rgba(238,230,216,.22);
+}
+body[data-theme="dark"] .modal {
+  background: #161514;
+  border-color: rgba(238,230,216,.75);
+}
+body[data-theme="dark"] .modal-overlay {
+  background: rgba(0,0,0,.72);
+}
+body[data-theme="dark"] .input,
+body[data-theme="dark"] .check-box {
+  background: #100f0e;
+}
+body[data-theme="dark"] .toggle-row {
+  border-color: rgba(238,230,216,.7);
+}
+body[data-theme="dark"] .fab {
+  border-color: rgba(238,230,216,.85);
+}
+body[data-theme="dark"] .badge-red {
+  background:#ff4b4b;
+  color:#140404;
+}
+body[data-theme="dark"] .badge-green {
+  background:#35d071;
+  color:#071109;
+}
+body[data-theme="dark"] .badge-yellow {
+  background:#ffe66b;
+  color:#15120a;
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
@@ -235,13 +332,15 @@ h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
 const { useState, useEffect, useMemo, useRef } = React;
 
 // ── UTILS ──────────────────────────────────────────────────────────────────────
-const getTodayDate = () => new Date().toISOString().split('T')[0];
+const localDateString = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const getTodayDate = () => localDateString();
 const todayObj = new Date();
 const currentDay = todayObj.getDay() || 7;
 const getDayDate = (target) => {
   const d = new Date(todayObj);
   d.setDate(todayObj.getDate() - currentDay + target);
-  return d.toISOString().split('T')[0];
+  return localDateString(d);
 };
 const fmtDate = (str) => {
   const d = new Date(str + 'T00:00:00');
@@ -250,6 +349,24 @@ const fmtDate = (str) => {
 const DAYS_SHORT = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const DAY_INDEXES = [1,2,3,4,5,6,0];
 const MONTH_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const SUBJECTS = ['История','Общество','Русский','Математика','Английский','Другое'];
+const inferSubject = (text='') => {
+  const t = text.toLowerCase();
+  if (t.includes('обществ')) return 'Общество';
+  if (t.includes('истор')) return 'История';
+  if (t.includes('рус')) return 'Русский';
+  if (t.includes('мат')) return 'Математика';
+  if (t.includes('англ')) return 'Английский';
+  return 'История';
+};
+const subjectColor = (subject) => ({
+  'История':'#0057FF',
+  'Общество':'#FFE500',
+  'Русский':'#FF2D2D',
+  'Математика':'#00C853',
+  'Английский':'#8A2BE2',
+  'Другое':'#777',
+}[subject] || '#777');
 
 // ── AUTO-COMPLETE ──────────────────────────────────────────────────────────────
 const runAutoCompletion = (cls, cst, cg, ctx) => {
@@ -265,8 +382,9 @@ const runAutoCompletion = (cls, cst, cg, ctx) => {
       const lsStudents = lesson.type === 'individual'
         ? [newS.find(s => s.id === lesson.targetId)].filter(Boolean)
         : (grp?.studentIds.map(id => newS.find(s => s.id === id)).filter(Boolean) || []);
+      const billableStudents = lsStudents.filter(s => !s.archived);
       const att = {};
-      lsStudents.forEach(s => {
+      billableStudents.forEach(s => {
         att[s.id] = true;
         const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
         newT.push({ id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate, date: getTodayDate(), comment:`Авто: ${fmtDate(lesson.date)}`, lessonId: lesson.id });
@@ -292,15 +410,15 @@ const mockStudents = [
   {id:15,name:'Марк',rate:1300,phone:'+7 900 015',balance:0},{id:16,name:'Анатолий',rate:1300,phone:'+7 900 016',balance:0},
 ];
 const mockGroups = [
-  {id:1,name:'История 10 (Вика, Алиса)',studentIds:[1,2]},
-  {id:2,name:'История 10 (Султан, Али)',studentIds:[3,4]},
-  {id:3,name:'Общество 10 (Султан, Андрей, Илья)',studentIds:[3,5,6],rateOverrides:{3:1100}},
-  {id:4,name:'Общество 11 (Кирилл, Ярослав, Миша)',studentIds:[7,8,9]},
-  {id:5,name:'Общество 11 (Полина, Яна)',studentIds:[10,11]},
-  {id:6,name:'История 10 (Андрей, Ирина, Илья)',studentIds:[5,12,6]},
-  {id:7,name:'Общество 9 (София, Временной)',studentIds:[13,14]},
-  {id:8,name:'Общество 10 (Марк, Анатолий, Ирина)',studentIds:[15,16,12]},
-  {id:9,name:'История (Полина, Ярослав, Кирилл)',studentIds:[10,8,7],rateOverrides:{10:600,8:1300,7:1300}},
+  {id:1,name:'История 10 (Вика, Алиса)',subject:'История',studentIds:[1,2]},
+  {id:2,name:'История 10 (Султан, Али)',subject:'История',studentIds:[3,4]},
+  {id:3,name:'Общество 10 (Султан, Андрей, Илья)',subject:'Общество',studentIds:[3,5,6],rateOverrides:{3:1100}},
+  {id:4,name:'Общество 11 (Кирилл, Ярослав, Миша)',subject:'Общество',studentIds:[7,8,9]},
+  {id:5,name:'Общество 11 (Полина, Яна)',subject:'Общество',studentIds:[10,11]},
+  {id:6,name:'История 10 (Андрей, Ирина, Илья)',subject:'История',studentIds:[5,12,6]},
+  {id:7,name:'Общество 9 (София, Временной)',subject:'Общество',studentIds:[13,14]},
+  {id:8,name:'Общество 10 (Марк, Анатолий, Ирина)',subject:'Общество',studentIds:[15,16,12]},
+  {id:9,name:'История (Полина, Ярослав, Кирилл)',subject:'История',studentIds:[10,8,7],rateOverrides:{10:600,8:1300,7:1300}},
 ];
 const mockLessons = [];
 let lId = 1;
@@ -312,11 +430,96 @@ for (let w = 0; w < 12; w++) {
       const date = getDayDate(day);
       const isPast = date < getTodayDate();
       configs.slice(i*3, i*3+3).forEach(([tid, time]) => {
-        mockLessons.push({id:lId++,type:'group',targetId:tid,date,time,status:isPast?'completed':'planned'});
+        const group = mockGroups.find(g => g.id === tid);
+        mockLessons.push({id:lId++,type:'group',targetId:tid,subject:group?.subject || inferSubject(group?.name),date,time,status:isPast?'completed':'planned'});
       });
     });
   });
 }
+
+const STORAGE_KEY = 'tutor-app-state-v2';
+const STORAGE_VERSION = 3;
+const LESSON_STATUS = {
+  planned: { label:'План', short:'ПЛАН', color:'#0057FF' },
+  completed: { label:'Проведен', short:'✓', color:'#00C853' },
+  cancelled_by_student: { label:'Отменил ученик', short:'УЧ', color:'#FF8C00' },
+  cancelled_by_tutor: { label:'Отменил репетитор', short:'РЕП', color:'#666' },
+  rescheduled: { label:'Перенесен', short:'ПЕР', color:'#8A2BE2' },
+  no_show: { label:'Неявка', short:'НЯ', color:'#FF2D2D' },
+};
+const FINAL_STATUSES = ['completed','cancelled_by_student','cancelled_by_tutor','rescheduled','no_show'];
+const isFinalLesson = (lesson) => FINAL_STATUSES.includes(lesson?.status);
+const money = (n) => `${Number(n || 0).toLocaleString('ru-RU')} ₽`;
+const cloneDemoState = () => ({
+  students: mockStudents.map(s => ({...s, subjects:['История','Общество'], archived:false, packageLessons:0, goal:'', notes:''})),
+  groups: mockGroups.map(g => ({...g, subject:g.subject || 'История', studentIds:[...g.studentIds], rateOverrides:{...(g.rateOverrides||{})}, archived:false})),
+  lessons: mockLessons.map(l => ({...l, subject:l.subject || 'История', topic:'', homework:'', lessonNote:'', packageUse:{}})),
+  txs: [],
+  settings: { theme:'light' },
+});
+const loadSavedState = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const data = parsed.data || {};
+    const groups = (data.groups || []).map(g => {
+      const inferred = inferSubject(g.name);
+      const subject = inferred !== 'История' ? inferred : (g.subject || inferred);
+      return {archived:false, subject, rateOverrides:{}, ...g, subject};
+    });
+    const lessons = (data.lessons || []).map(l => {
+      const group = l.type === 'group' ? groups.find(g => g.id === l.targetId) : null;
+      const lessonSubject = group?.subject || l.subject || inferSubject(group?.name);
+      return {subject:lessonSubject, topic:'', homework:'', lessonNote:'', packageUse:{}, ...l, subject:lessonSubject};
+    });
+    const students = (data.students || []).map(s => {
+      const groupSubjects = groups.filter(g => g.studentIds?.includes(s.id)).map(g => g.subject);
+      const storedSubjects = s.subjects || (s.subject ? [s.subject] : []);
+      const subjects = [...new Set([...storedSubjects, ...groupSubjects])];
+      return {archived:false, packageLessons:0, goal:'', notes:'', ...s, subjects:subjects.length ? subjects : ['История']};
+    });
+    return {
+      students,
+      groups,
+      lessons,
+      txs: data.txs || [],
+      settings: {theme:'light', ...(data.settings || {})},
+    };
+  } catch (e) {
+    console.warn('Не удалось загрузить сохранение', e);
+    return null;
+  }
+};
+const saveState = (data) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({version:STORAGE_VERSION, savedAt:new Date().toISOString(), data}));
+};
+const txDelta = (tx) => tx.type === 'payment' ? Number(tx.amount || 0) : -Number(tx.amount || 0);
+const getLessonSubject = (lesson, groups) => {
+  if (lesson.subject) return lesson.subject;
+  if (lesson.type === 'group') return groups.find(g => g.id === lesson.targetId)?.subject || 'История';
+  return 'История';
+};
+const getLessonStudents = (lesson, students, groups, opts={}) => {
+  const group = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+  const list = lesson.type === 'individual'
+    ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+    : (group?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+  return opts.includeArchived ? list : list.filter(s => !s.archived);
+};
+const getLessonRate = (lesson, student, groups) => {
+  const group = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+  return group?.rateOverrides?.[student.id] ?? student.rate;
+};
+const getStudentLastHomework = (studentId, lessons, groups) => lessons
+  .filter(l => l.homework && (l.type === 'individual'
+    ? l.targetId === studentId
+    : groups.find(g => g.id === l.targetId)?.studentIds.includes(studentId)))
+  .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time))[0]?.homework || '';
+const getStudentLessons = (studentId, lessons, groups) => lessons
+  .filter(l => l.type === 'individual'
+    ? l.targetId === studentId
+    : groups.find(g => g.id === l.targetId)?.studentIds.includes(studentId));
 
 // ── ICONS ──────────────────────────────────────────────────────────────────────
 const Ico = ({p, children, size=22, cls='', sw=2}) =>
@@ -371,13 +574,35 @@ function StudentModal({ student, onClose, onSave }) {
   const [name, setName]   = useState(student?.name || '');
   const [rate, setRate]   = useState(student?.rate || 1500);
   const [phone, setPhone] = useState(student?.phone || '');
-  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; onSave({name,rate:Number(rate),phone}); };
+  const [subjects, setSubjects] = useState(student?.subjects || ['История']);
+  const [goal, setGoal]   = useState(student?.goal || '');
+  const [notes, setNotes] = useState(student?.notes || '');
+  const [archived, setArchived] = useState(!!student?.archived);
+  const toggleSubject = (subject) => setSubjects(p => p.includes(subject) ? p.filter(x=>x!==subject) : [...p,subject]);
+  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; onSave({name,rate:Number(rate),phone,subjects:subjects.length?subjects:['История'],goal,notes,archived}); };
   return (
     <Modal title={student ? 'Редактировать' : 'Новый ученик'} onClose={onClose}>
       <form onSubmit={submit}>
         <FormField label="Имя"><input className="input" required value={name} onChange={e=>setName(e.target.value)} placeholder="ФИО"/></FormField>
+        <FormField label="Предметы">
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            {SUBJECTS.map(subject => (
+              <button key={subject} type="button" className={`btn btn-sm btn-full ${subjects.includes(subject)?'btn-black':'btn-white'}`} onClick={()=>toggleSubject(subject)}>
+                {subject}
+              </button>
+            ))}
+          </div>
+        </FormField>
         <FormField label="Ставка ₽/урок"><input className="input" type="number" required value={rate} onChange={e=>setRate(e.target.value)}/></FormField>
         <FormField label="Телефон"><input className="input" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+7 ..."/></FormField>
+        <FormField label="Цель"><input className="input" value={goal} onChange={e=>setGoal(e.target.value)} placeholder="ЕГЭ история, ОГЭ, школьная программа"/></FormField>
+        <FormField label="Заметки"><textarea className="input" value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Слабые темы, родитель, особенности" style={{minHeight:74,resize:'vertical'}}/></FormField>
+        {student && (
+          <div className={`check-row ${archived?'checked':''}`} onClick={()=>setArchived(!archived)}>
+            <span style={{fontWeight:700}}>Архивный ученик</span>
+            <div className={`check-box ${archived?'checked':''}`}>{archived && <IcoCheck size={14}/>}</div>
+          </div>
+        )}
         <div style={{display:'flex',gap:10,marginTop:8}}>
           <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
           <button type="submit" className="btn btn-black btn-full">Сохранить</button>
@@ -387,42 +612,79 @@ function StudentModal({ student, onClose, onSave }) {
   );
 }
 
-function GroupModal({ students, onClose, onSave }) {
-  const [name, setName] = useState('');
-  const [sel, setSel]   = useState([]);
+function GroupModal({ group, students, onClose, onSave }) {
+  const [name, setName] = useState(group?.name || '');
+  const [subject, setSubject] = useState(group?.subject || 'История');
+  const [sel, setSel]   = useState(group?.studentIds || []);
+  const [archived, setArchived] = useState(!!group?.archived);
+  const [rateOverrides, setRateOverrides] = useState(group?.rateOverrides || {});
+  const availableStudents = students.filter(s => !s.archived || sel.includes(s.id));
   const toggle = (id) => setSel(p => p.includes(id) ? p.filter(x=>x!==id) : [...p,id]);
-  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; onSave({name, studentIds: sel}); };
+  const submit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    const cleanRates = {};
+    Object.entries(rateOverrides).forEach(([id, val]) => {
+      if (String(val).trim() !== '') cleanRates[id] = Number(val);
+    });
+    onSave({name, subject, studentIds: sel, rateOverrides: cleanRates, archived});
+  };
   return (
-    <Modal title="Новая группа" onClose={onClose}>
+    <Modal title={group ? 'Редактировать группу' : 'Новая группа'} onClose={onClose}>
       <form onSubmit={submit}>
         <FormField label="Название"><input className="input" required value={name} onChange={e=>setName(e.target.value)}/></FormField>
+        <FormField label="Предмет">
+          <select className="input" value={subject} onChange={e=>setSubject(e.target.value)}>
+            {SUBJECTS.map(s=><option key={s} value={s}>{s}</option>)}
+          </select>
+        </FormField>
         <div className="label" style={{marginBottom:8}}>Ученики</div>
         <div style={{maxHeight:240,overflowY:'auto'}}>
-          {students.map(s => (
-            <div key={s.id} className={`check-row ${sel.includes(s.id)?'checked':''}`} onClick={()=>toggle(s.id)}>
-              <span style={{fontWeight:700}}>{s.name}</span>
-              <div className={`check-box ${sel.includes(s.id)?'checked':''}`}>
-                {sel.includes(s.id) && <IcoCheck size={14} style={{stroke:'#0a0a0a'}}/>}
+          {availableStudents.map(s => (
+            <div key={s.id} className={`check-row ${sel.includes(s.id)?'checked':''}`} style={{alignItems:'flex-start',gap:10}}>
+              <div onClick={()=>toggle(s.id)} style={{display:'flex',alignItems:'center',gap:10,flex:1,cursor:'pointer'}}>
+                <div className={`check-box ${sel.includes(s.id)?'checked':''}`}>
+                  {sel.includes(s.id) && <IcoCheck size={14} style={{stroke:'#0a0a0a'}}/>}
+                </div>
+                <div>
+                  <div style={{fontWeight:700}}>{s.name}</div>
+                  <div style={{fontSize:10,color:'#666'}}>обычная ставка {money(s.rate)}</div>
+                </div>
               </div>
+              {sel.includes(s.id) && (
+                <input className="input" type="number" placeholder={s.rate} value={rateOverrides[s.id] ?? ''}
+                  onChange={e=>setRateOverrides(p=>({...p,[s.id]:e.target.value}))}
+                  style={{width:92,padding:'6px 8px',fontSize:11,boxShadow:'2px 2px 0 #0a0a0a'}}/>
+              )}
             </div>
           ))}
         </div>
+        <div className={`check-row ${archived?'checked':''}`} onClick={()=>setArchived(!archived)} style={{marginTop:10}}>
+          <span style={{fontWeight:700}}>Архивировать группу</span>
+          <div className={`check-box ${archived?'checked':''}`}>{archived && <IcoCheck size={14}/>}</div>
+        </div>
         <div style={{display:'flex',gap:10,marginTop:12}}>
           <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
-          <button type="submit" className="btn btn-black btn-full">Создать</button>
+          <button type="submit" className="btn btn-black btn-full">{group ? 'Сохранить' : 'Создать'}</button>
         </div>
       </form>
     </Modal>
   );
 }
 
-function TransactionModal({ students, onClose, onSave }) {
-  const [sid, setSid]   = useState(students[0]?.id || '');
-  const [type, setType] = useState('payment');
-  const [amt, setAmt]   = useState('');
-  const submit = (e) => { e.preventDefault(); onSave({studentId:Number(sid),type,amount:Number(amt),date:getTodayDate(),comment:''}); };
+function TransactionModal({ tx, students, onClose, onSave }) {
+  const [sid, setSid]   = useState(tx?.studentId || students[0]?.id || '');
+  const [type, setType] = useState(tx?.type || 'payment');
+  const [amt, setAmt]   = useState(tx?.amount || '');
+  const [date, setDate] = useState(tx?.date || getTodayDate());
+  const [comment, setComment] = useState(tx?.comment || '');
+  const submit = (e) => {
+    e.preventDefault();
+    if (!sid || Number(amt) <= 0) return;
+    onSave({studentId:Number(sid),type,amount:Number(amt),date,comment});
+  };
   return (
-    <Modal title="Новая операция" onClose={onClose}>
+    <Modal title={tx ? 'Редактировать операцию' : 'Новая операция'} onClose={onClose}>
       <form onSubmit={submit}>
         <FormField label="Ученик">
           <select className="input" value={sid} onChange={e=>setSid(e.target.value)}>
@@ -434,31 +696,50 @@ function TransactionModal({ students, onClose, onSave }) {
           <button type="button" className={`toggle-opt ${type==='charge'?'active':''}`} onClick={()=>setType('charge')}>− Списание</button>
         </div>
         <FormField label="Сумма ₽"><input className="input" type="number" required min="1" value={amt} onChange={e=>setAmt(e.target.value)} placeholder="0"/></FormField>
+        <FormField label="Дата"><input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></FormField>
+        <FormField label="Комментарий"><input className="input" value={comment} onChange={e=>setComment(e.target.value)} placeholder="Например: оплата за март"/></FormField>
         <div style={{display:'flex',gap:10,marginTop:8}}>
           <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
-          <button type="submit" className={`btn btn-full ${type==='payment'?'btn-green':'btn-red'}`}>Провести</button>
+          <button type="submit" className={`btn btn-full ${type==='payment'?'btn-green':'btn-red'}`}>{tx ? 'Сохранить' : 'Провести'}</button>
         </div>
       </form>
     </Modal>
   );
 }
 
-function LessonModal({ students, groups, initialDate, lessonToEdit, onClose, onSave }) {
-  const [type, setType]       = useState(lessonToEdit?.type || 'group');
-  const [targetId, setTgt]    = useState(lessonToEdit ? String(lessonToEdit.targetId) : '');
+function LessonModal({ students, groups, initialDate, initialStudentId, lessonToEdit, onClose, onSave }) {
+  const [type, setType]       = useState(lessonToEdit?.type || (initialStudentId ? 'individual' : 'group'));
+  const [targetId, setTgt]    = useState(lessonToEdit ? String(lessonToEdit.targetId) : (initialStudentId ? String(initialStudentId) : ''));
+  const [subject, setSubject] = useState(lessonToEdit?.subject || 'История');
   const [date, setDate]       = useState(lessonToEdit?.date || initialDate || getTodayDate());
   const [time, setTime]       = useState(lessonToEdit?.time || '15:00');
   const [days, setDays]       = useState([]);
   const [recurring, setRec]   = useState(false);
   const [weeks, setWeeks]     = useState(4);
+  const [applySeries, setApplySeries] = useState(false);
+  const [topic, setTopic] = useState(lessonToEdit?.topic || '');
+  const [homework, setHomework] = useState(lessonToEdit?.homework || '');
+  const [lessonNote, setLessonNote] = useState(lessonToEdit?.lessonNote || '');
+  const activeGroups = groups.filter(g => !g.archived || lessonToEdit?.targetId === g.id);
+  const activeStudents = students.filter(s => !s.archived || lessonToEdit?.targetId === s.id || initialStudentId === s.id);
 
   useEffect(() => {
     if (!lessonToEdit && days.length === 0 && date) setDays([new Date(date).getDay()]);
   }, [date]);
   useEffect(() => {
-    if (type==='individual' && students.length && !targetId) setTgt(String(students[0].id));
-    if (type==='group' && groups.length && (!targetId || !groups.find(g=>g.id===Number(targetId)))) setTgt(String(groups[0].id));
-  }, [type]);
+    if (type==='individual' && activeStudents.length && !targetId) setTgt(String(activeStudents[0].id));
+    if (type==='group' && activeGroups.length && (!targetId || !activeGroups.find(g=>g.id===Number(targetId)))) setTgt(String(activeGroups[0].id));
+  }, [type, groups]);
+  useEffect(() => {
+    if (lessonToEdit) return;
+    if (type === 'group') {
+      const g = activeGroups.find(x=>x.id===Number(targetId));
+      if (g?.subject) setSubject(g.subject);
+    } else {
+      const s = activeStudents.find(x=>x.id===Number(targetId));
+      if (s?.subjects?.length) setSubject(s.subjects[0]);
+    }
+  }, [type, targetId]);
 
   const toggleDay = (d) => {
     if (days.includes(d)) { if (days.length > 1) setDays(days.filter(x=>x!==d)); }
@@ -468,9 +749,10 @@ function LessonModal({ students, groups, initialDate, lessonToEdit, onClose, onS
   const submit = (e) => {
     e.preventDefault();
     if (!targetId) return;
-    const base = { type, targetId: Number(targetId), time };
-    if (lessonToEdit) { onSave([{...base, date}]); return; }
+    const base = { type, targetId: Number(targetId), subject, time, topic, homework, lessonNote };
+    if (lessonToEdit) { onSave([{...base, date}], {applySeries}); return; }
     const arr = [];
+    const seriesId = (recurring || days.length > 1) ? Date.now() : null;
     const [y,m,dd] = date.split('-').map(Number);
     const baseDate = new Date(y, m-1, dd);
     days.forEach(di => {
@@ -480,7 +762,7 @@ function LessonModal({ students, groups, initialDate, lessonToEdit, onClose, onS
       const wc = recurring ? weeks : 1;
       for (let i = 0; i < wc; i++) {
         const nd = new Date(iter); nd.setDate(iter.getDate() + i*7);
-        arr.push({...base, date:`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`});
+        arr.push({...base, seriesId, date:`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`});
       }
     });
     onSave(arr);
@@ -496,14 +778,22 @@ function LessonModal({ students, groups, initialDate, lessonToEdit, onClose, onS
         <FormField label={type==='group'?'Группа':'Ученик'}>
           <select className="input" required value={targetId} onChange={e=>setTgt(e.target.value)}>
             {type==='individual'
-              ? students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)
-              : groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+              ? activeStudents.map(s=><option key={s.id} value={s.id}>{s.name}{s.archived?' (архив)':''}</option>)
+              : activeGroups.map(g=><option key={g.id} value={g.id}>{g.name}{g.archived?' (архив)':''}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Предмет">
+          <select className="input" required value={subject} onChange={e=>setSubject(e.target.value)}>
+            {SUBJECTS.map(s=><option key={s} value={s}>{s}</option>)}
           </select>
         </FormField>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
           <div><label className="label">{lessonToEdit?'Дата':'Дата начала'}</label><input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></div>
           <div><label className="label">Время</label><input className="input" type="time" required value={time} onChange={e=>setTime(e.target.value)}/></div>
         </div>
+        <FormField label="Тема урока"><input className="input" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Например: реформы Петра I"/></FormField>
+        <FormField label="Домашка"><textarea className="input" value={homework} onChange={e=>setHomework(e.target.value)} placeholder="Что сделать к следующему уроку" style={{minHeight:70,resize:'vertical'}}/></FormField>
+        <FormField label="Заметка после урока"><textarea className="input" value={lessonNote} onChange={e=>setLessonNote(e.target.value)} placeholder="Что получилось, что повторить" style={{minHeight:70,resize:'vertical'}}/></FormField>
         {!lessonToEdit && (
           <div style={{background:'#fffde0',border:'2.5px solid #0a0a0a',borderRadius:4,padding:12,marginBottom:14}}>
             <div className="label" style={{marginBottom:8}}>Дни недели</div>
@@ -538,6 +828,12 @@ function LessonModal({ students, groups, initialDate, lessonToEdit, onClose, onS
             )}
           </div>
         )}
+        {lessonToEdit?.seriesId && (
+          <div className={`check-row ${applySeries?'checked':''}`} onClick={()=>setApplySeries(!applySeries)}>
+            <span style={{fontWeight:700}}>Применить время/участников ко всей серии</span>
+            <div className={`check-box ${applySeries?'checked':''}`}>{applySeries && <IcoCheck size={14}/>}</div>
+          </div>
+        )}
         <div style={{display:'flex',gap:10,marginTop:8}}>
           <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
           <button type="submit" disabled={!targetId} className="btn btn-black btn-full">
@@ -561,8 +857,11 @@ function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
     if (lesson.status==='completed' && lesson.attendance) return lesson.attendance;
     const a={}; ls.forEach(s=>a[s.id]=true); return a;
   });
+  const [topic, setTopic] = useState(lesson.topic || '');
+  const [homework, setHomework] = useState(lesson.homework || '');
+  const [lessonNote, setLessonNote] = useState(lesson.lessonNote || '');
 
-  const submit = (e) => { e.preventDefault(); onSave(lesson.id, att); };
+  const submit = (e) => { e.preventDefault(); onSave(lesson.id, att, {topic, homework, lessonNote}); };
 
   return (
     <Modal title="Посещаемость" onClose={onClose}>
@@ -571,6 +870,9 @@ function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
         <div style={{marginTop:4,color:'#444'}}>Снимите галочку — деньги вернутся на баланс</div>
       </div>
       <form onSubmit={submit}>
+        <FormField label="Тема"><input className="input" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Что проходили"/></FormField>
+        <FormField label="Домашка"><textarea className="input" value={homework} onChange={e=>setHomework(e.target.value)} placeholder="Что задать" style={{minHeight:64,resize:'vertical'}}/></FormField>
+        <FormField label="Заметка"><textarea className="input" value={lessonNote} onChange={e=>setLessonNote(e.target.value)} placeholder="Что важно помнить" style={{minHeight:64,resize:'vertical'}}/></FormField>
         {ls.map(s => {
           const rate = group?.rateOverrides?.[s.id] ?? s.rate;
           const present = att[s.id] || false;
@@ -597,13 +899,222 @@ function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
   );
 }
 
+function LessonStatusModal({ lesson, onClose, onStatus, onDelete, onReschedule, onMessage }) {
+  const actions = [
+    ['planned','Вернуть в план','btn-blue'],
+    ['cancelled_by_student','Отменил ученик','btn-white'],
+    ['cancelled_by_tutor','Отменил репетитор','btn-white'],
+    ['rescheduled','Перенесён','btn-white'],
+    ['no_show','Неявка: списать оплату','btn-red'],
+  ];
+  return (
+    <Modal title="Статус урока" onClose={onClose}>
+      <div style={{fontSize:12,color:'#666',marginBottom:12}}>
+        {fmtDate(lesson.date)} в {lesson.time}
+      </div>
+      <div style={{display:'grid',gap:8}}>
+        <button className="btn btn-full btn-blue" onClick={()=>onReschedule(lesson)}>Перенести с созданием нового</button>
+        <button className="btn btn-full btn-white" onClick={()=>onMessage(lesson)}>Сообщение по уроку</button>
+        {actions.map(([status,label,cls]) => (
+          <button key={status} className={`btn btn-full ${cls}`} onClick={()=>onStatus(lesson.id,status)}>
+            {lesson.status===status ? '✓ ' : ''}{label}
+          </button>
+        ))}
+        <button className="btn btn-full btn-black" onClick={(e)=>onDelete(lesson.id,e)}>Удалить занятие</button>
+      </div>
+    </Modal>
+  );
+}
+
+function StudentDetailModal({ student, lessons, txs, groups, students, onClose, onEdit, onPay, onLesson, onPackage, onMessage, onArchive }) {
+  const ownLessons = lessons
+    .filter(l => l.type === 'individual'
+      ? l.targetId === student.id
+      : groups.find(g => g.id === l.targetId)?.studentIds.includes(student.id))
+    .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const completed = ownLessons.filter(l => l.status === 'completed' || l.status === 'no_show');
+  const skipped = completed.filter(l => l.attendance?.[student.id] === false || l.status === 'no_show').length;
+  const attended = completed.length - skipped;
+  const studentTxs = txs.filter(tx => tx.studentId === student.id).slice(0,8);
+  const phoneClean = (student.phone || '').replace(/\s/g,'');
+  return (
+    <Modal title={student.name} onClose={onClose}>
+      <div className="stat-row">
+        <div className="stat-card">
+          <div className="stat-label">Баланс</div>
+          <div className="stat-value" style={{color:student.balance<0?'#FF2D2D':student.balance>0?'#00C853':'#0a0a0a'}}>{money(student.balance)}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Абонемент</div>
+          <div className="stat-value">{student.packageLessons || 0}</div>
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
+        {student.balance < 0 && <button className="btn btn-green btn-full" onClick={()=>onPay(student.id)}>Оплатил долг</button>}
+        <button className="btn btn-black btn-full" onClick={()=>onLesson(student.id)}>Урок</button>
+        <button className="btn btn-blue btn-full" onClick={()=>onPackage(student)}>Абонемент</button>
+        <button className="btn btn-white btn-full" onClick={()=>onMessage(student)}>Сообщение</button>
+        <button className="btn btn-white btn-full" onClick={onEdit}>Править</button>
+        <button className={`btn btn-full ${student.archived?'btn-green':'btn-white'}`} onClick={()=>onArchive(student.id, !student.archived)}>
+          {student.archived ? 'Вернуть' : 'В архив'}
+        </button>
+        {student.phone && <button className="btn btn-white btn-full" onClick={()=>{ window.location.href = `tel:${phoneClean}`; }}>Позвонить</button>}
+      </div>
+
+      <div className="card" style={{padding:12}}>
+        <div className="label">Сводка</div>
+        <div style={{fontSize:12,lineHeight:1.8}}>
+          Ставка: <strong>{money(student.rate)}</strong><br/>
+          Предметы: <strong>{(student.subjects || ['История']).join(', ')}</strong><br/>
+          Посещаемость: <strong>{completed.length ? Math.round(attended/completed.length*100) : 0}%</strong><br/>
+          Уроков: <strong>{ownLessons.length}</strong> · проведено <strong>{completed.length}</strong> · пропусков <strong>{skipped}</strong><br/>
+          {student.goal && <>Цель: <strong>{student.goal}</strong><br/></>}
+          {student.notes && <>Заметки: {student.notes}</>}
+        </div>
+      </div>
+
+      {getStudentLastHomework(student.id, lessons, groups) && (
+        <div className="card" style={{padding:12}}>
+          <div className="label">Последняя домашка</div>
+          <div style={{fontSize:12,lineHeight:1.6}}>{getStudentLastHomework(student.id, lessons, groups)}</div>
+        </div>
+      )}
+
+      <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,margin:'14px 0 8px'}}>БЛИЖАЙШИЕ УРОКИ</div>
+      {ownLessons.filter(l=>l.status==='planned').slice(0,4).map(l => (
+        <div key={l.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #ddd',fontSize:11}}>
+          <span>{fmtDate(l.date)} · {l.time} · {l.subject || 'История'}</span>
+          <strong>{l.type==='group' ? groups.find(g=>g.id===l.targetId)?.name : 'Индивидуально'}</strong>
+        </div>
+      ))}
+      {ownLessons.filter(l=>l.status==='planned').length === 0 && <div style={{fontSize:11,color:'#888'}}>Нет будущих уроков</div>}
+
+      <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,margin:'14px 0 8px'}}>ОПЕРАЦИИ</div>
+      {studentTxs.map(tx => (
+        <div key={tx.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #ddd',fontSize:11}}>
+          <span>{fmtDate(tx.date)} · {tx.comment || (tx.type==='payment'?'Оплата':'Списание')}</span>
+          <strong style={{color:tx.type==='payment'?'#00C853':'#FF2D2D'}}>{tx.type==='payment'?'+':'-'}{money(tx.amount)}</strong>
+        </div>
+      ))}
+      {studentTxs.length === 0 && <div style={{fontSize:11,color:'#888'}}>Операций пока нет</div>}
+    </Modal>
+  );
+}
+
+function PackageModal({ student, onClose, onSave }) {
+  const [lessonsCount, setLessonsCount] = useState(4);
+  const [amount, setAmount] = useState(student.rate * 4);
+  const submit = (e) => {
+    e.preventDefault();
+    onSave(student.id, Number(lessonsCount), Number(amount));
+  };
+  return (
+    <Modal title="Абонемент" onClose={onClose}>
+      <form onSubmit={submit}>
+        <div className="card" style={{padding:12}}>
+          <div className="label">Ученик</div>
+          <div style={{fontFamily:'Unbounded,cursive',fontWeight:900}}>{student.name}</div>
+          <div style={{fontSize:11,color:'#666',marginTop:4}}>Сейчас осталось: {student.packageLessons || 0} зан.</div>
+        </div>
+        <FormField label="Занятий добавить">
+          <select className="input" value={lessonsCount} onChange={e=>{
+            const n = Number(e.target.value);
+            setLessonsCount(n);
+            setAmount(student.rate * n);
+          }}>
+            {[1,2,4,6,8,10,12].map(n=><option key={n} value={n}>{n} зан.</option>)}
+          </select>
+        </FormField>
+        <FormField label="Оплата ₽"><input className="input" type="number" min="0" value={amount} onChange={e=>setAmount(e.target.value)}/></FormField>
+        <div style={{display:'flex',gap:10}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" className="btn btn-green btn-full">Добавить</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function RescheduleModal({ lesson, onClose, onSave }) {
+  const [date, setDate] = useState(lesson.date);
+  const [time, setTime] = useState(lesson.time);
+  const submit = (e) => {
+    e.preventDefault();
+    onSave(lesson.id, date, time);
+  };
+  return (
+    <Modal title="Перенести урок" onClose={onClose}>
+      <form onSubmit={submit}>
+        <div style={{fontSize:12,color:'#666',marginBottom:12}}>
+          Старый урок: {fmtDate(lesson.date)} в {lesson.time}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+          <FormField label="Новая дата"><input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></FormField>
+          <FormField label="Новое время"><input className="input" type="time" required value={time} onChange={e=>setTime(e.target.value)}/></FormField>
+        </div>
+        <div style={{display:'flex',gap:10}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" className="btn btn-blue btn-full">Перенести</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function MessageModal({ student, lesson, groups, lessons, onClose }) {
+  const [kind, setKind] = useState('reminder');
+  const [copied, setCopied] = useState(false);
+  const targetLesson = lesson || getStudentLessons(student.id, lessons, groups)
+    .filter(l=>l.status==='planned')
+    .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+  const lastHomework = getStudentLastHomework(student.id, lessons, groups);
+  const text = (() => {
+    const lessonText = targetLesson ? `${fmtDate(targetLesson.date)} в ${targetLesson.time}` : 'ближайшее занятие';
+    if (kind === 'reminder') return `Привет! Напоминаю: занятие ${lessonText}.`;
+    if (kind === 'debt') return `Привет! По занятиям сейчас долг ${money(Math.abs(student.balance))}. Когда удобно будет оплатить?`;
+    if (kind === 'homework') return `Привет! Домашка к следующему занятию: ${lastHomework || 'пока не записана'}.`;
+    if (kind === 'reschedule') return `Привет! Нужно перенести занятие ${lessonText}. Напиши, пожалуйста, когда удобно.`;
+    return '';
+  })();
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch (e) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+      setCopied(true);
+    }
+  };
+  return (
+    <Modal title="Сообщение" onClose={onClose}>
+      <div className="toggle-row">
+        <button className={`toggle-opt ${kind==='reminder'?'active':''}`} onClick={()=>setKind('reminder')}>Напомнить</button>
+        <button className={`toggle-opt ${kind==='debt'?'active':''}`} onClick={()=>setKind('debt')}>Долг</button>
+      </div>
+      <div className="toggle-row">
+        <button className={`toggle-opt ${kind==='homework'?'active':''}`} onClick={()=>setKind('homework')}>Домашка</button>
+        <button className={`toggle-opt ${kind==='reschedule'?'active':''}`} onClick={()=>setKind('reschedule')}>Перенос</button>
+      </div>
+      <FormField label="Текст"><textarea className="input" readOnly value={text} style={{minHeight:120,resize:'vertical'}}/></FormField>
+      <button className={`btn btn-full ${copied?'btn-green':'btn-black'}`} onClick={copy}>{copied ? 'Скопировано' : 'Скопировать'}</button>
+    </Modal>
+  );
+}
+
 // ── MAIN APP ───────────────────────────────────────────────────────────────────
 function App() {
   const [tab, setTab]           = useState('today');
-  const [students, setStudents] = useState(mockStudents);
-  const [groups, setGroups]     = useState(mockGroups);
-  const [lessons, setLessons]   = useState(mockLessons);
+  const [students, setStudents] = useState([]);
+  const [groups, setGroups]     = useState([]);
+  const [lessons, setLessons]   = useState([]);
   const [txs, setTxs]           = useState([]);
+  const [settings, setSettings] = useState({theme:'light'});
   const [loaded, setLoaded]     = useState(false);
 
   // selected date for schedule tab
@@ -613,42 +1124,121 @@ function App() {
   const [modal, setModal]       = useState(null); // { type, payload }
 
   useEffect(() => {
-    const r = runAutoCompletion(mockLessons, mockStudents, mockGroups, []);
-    if (r) { setLessons(r.newLessons); setStudents(r.newStudents); setTxs(r.newTransactions); }
+    const saved = loadSavedState();
+    const initial = saved || cloneDemoState();
+    const r = runAutoCompletion(initial.lessons, initial.students, initial.groups, initial.txs || []);
+    setLessons(r?.newLessons || initial.lessons);
+    setStudents(r?.newStudents || initial.students);
+    setGroups(initial.groups || []);
+    setTxs(r?.newTransactions || initial.txs || []);
+    setSettings(initial.settings || {theme:'light'});
     setLoaded(true);
   }, []);
 
+  useEffect(() => {
+    if (!loaded) return;
+    saveState({students, groups, lessons, txs, settings});
+  }, [loaded, students, groups, lessons, txs, settings]);
+
+  useEffect(() => {
+    document.body.dataset.theme = settings.theme || 'light';
+  }, [settings.theme]);
+
   // ── handlers ──
+  const applyBalanceDelta = (studentId, delta) => {
+    setStudents(p => p.map(s => s.id === studentId ? {...s, balance:s.balance + delta} : s));
+  };
+
   const saveStudent = (data) => {
     const edit = modal?.payload;
     if (edit) setStudents(p => p.map(s => s.id===edit.id ? {...s,...data} : s));
     else setStudents(p => [...p, {...data, id: Date.now(), balance:0}]);
     setModal(null);
   };
+  const archiveStudent = (id, archived=true) => {
+    setStudents(p => p.map(s=>s.id===id?{...s,archived}:s));
+    if (archived) setGroups(p => p.map(g=>({...g,studentIds:g.studentIds.filter(x=>x!==id)})));
+  };
   const delStudent = (id) => {
-    if (!confirm('Удалить ученика?')) return;
+    if (!confirm('Удалить ученика? Лучше использовать архив, чтобы сохранить историю.')) return;
     setStudents(p => p.filter(s=>s.id!==id));
     setGroups(p => p.map(g=>({...g,studentIds:g.studentIds.filter(x=>x!==id)})));
   };
-  const saveGroup = (data) => { setGroups(p=>[...p,{...data,id:Date.now()}]); setModal(null); };
-  const delGroup  = (id) => { if(confirm('Удалить группу?')) setGroups(p=>p.filter(g=>g.id!==id)); };
+  const saveGroup = (data) => {
+    const edit = modal?.payload;
+    if (edit) setGroups(p=>p.map(g=>g.id===edit.id?{...g,...data}:g));
+    else setGroups(p=>[...p,{...data,id:Date.now()}]);
+    setModal(null);
+  };
+  const delGroup  = (id) => {
+    if(confirm('Удалить группу? Будущие уроки этой группы останутся в расписании.')) {
+      setGroups(p=>p.filter(g=>g.id!==id));
+    }
+  };
 
   const saveTx = (data) => {
-    const tx = {...data, id:Date.now()};
-    setTxs(p=>[tx,...p]);
-    setStudents(p=>p.map(s=>{
-      if(s.id!==data.studentId) return s;
-      const delta = data.type==='payment' ? Number(data.amount) : -Number(data.amount);
-      return {...s, balance: s.balance+delta};
-    }));
+    const edit = modal?.type === 'transaction' ? modal?.payload : null;
+    if (edit) {
+      const nextTx = {...edit, ...data};
+      setTxs(p=>p.map(tx=>tx.id===edit.id?nextTx:tx));
+      applyBalanceDelta(edit.studentId, -txDelta(edit));
+      applyBalanceDelta(nextTx.studentId, txDelta(nextTx));
+    } else {
+      const tx = {...data, id:Date.now()};
+      setTxs(p=>[tx,...p]);
+      applyBalanceDelta(data.studentId, txDelta(tx));
+    }
     setModal(null);
   };
 
-  const saveLesson = (data, editId=null) => {
-    if (editId) setLessons(p=>p.map(l=>l.id===editId?{...l,...data[0]}:l));
+  const delTx = (tx) => {
+    if (!confirm('Удалить операцию и пересчитать баланс?')) return;
+    setTxs(p=>p.filter(t=>t.id!==tx.id));
+    applyBalanceDelta(tx.studentId, -txDelta(tx));
+  };
+
+  const saveLesson = (data, editId=null, options={}) => {
+    if (editId) {
+      const editLesson = lessons.find(l=>l.id===editId);
+      const patch = data[0];
+      setLessons(p=>p.map(l=>{
+        if (l.id === editId) return {...l,...patch};
+        if (options.applySeries && editLesson?.seriesId && l.seriesId === editLesson.seriesId && l.status === 'planned') {
+          return {...l, type:patch.type, targetId:patch.targetId, subject:patch.subject, time:patch.time};
+        }
+        return l;
+      }));
+    }
     else {
       const arr = Array.isArray(data)?data:[data];
       setLessons(p=>[...p,...arr.map((l,i)=>({...l,id:Date.now()+i,status:'planned'}))]);
+    }
+    setModal(null);
+  };
+
+  const rescheduleLesson = (lessonId, date, time) => {
+    const lesson = lessons.find(l=>l.id===lessonId);
+    if (!lesson) return;
+    const newLesson = {
+      ...lesson,
+      id: Date.now(),
+      date,
+      time,
+      status:'planned',
+      attendance: undefined,
+      rescheduledFrom: lesson.id,
+      packageUse:{},
+    };
+    setLessons(p=>p.map(l=>l.id===lessonId?{...l,status:'rescheduled',rescheduledTo:newLesson.id}:l).concat(newLesson));
+    setModal(null);
+  };
+
+  const savePackage = (studentId, lessonsCount, amount) => {
+    setStudents(p=>p.map(s=>s.id===studentId?{...s,packageLessons:(s.packageLessons||0)+lessonsCount}:s));
+    if (amount > 0) {
+      const tx = {id:Date.now(),studentId,type:'payment',amount,date:getTodayDate(),comment:`Абонемент: ${lessonsCount} зан.`};
+      setTxs(p=>[tx,...p]);
+      applyBalanceDelta(studentId, amount);
     }
     setModal(null);
   };
@@ -657,32 +1247,101 @@ function App() {
     if(e) e.stopPropagation();
     if(!confirm('Удалить занятие?')) return;
     const lesson = lessons.find(l=>l.id===id);
-    if (lesson?.status==='completed') {
+    if (lesson?.status==='no_show') {
+      removeNoShowCharges(id);
+    } else if (lesson?.status==='completed') {
       const grp = lesson.type==='group' ? groups.find(g=>g.id===lesson.targetId) : null;
       const refunds=[]; const upd={};
+      const pkgRefunds = {};
       Object.entries(lesson.attendance||{}).forEach(([sid,pres])=>{
         if(!pres) return;
         const s = students.find(st=>st.id===Number(sid));
         if(!s) return;
+        if (lesson.packageUse?.[s.id]) {
+          pkgRefunds[s.id] = (pkgRefunds[s.id]||0) + 1;
+          return;
+        }
         const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
         refunds.push({id:Date.now()+Math.random(),studentId:s.id,type:'payment',amount:rate,date:getTodayDate(),comment:`Отмена: ${fmtDate(lesson.date)}`});
         upd[s.id] = (upd[s.id]||0) + rate;
       });
       if (refunds.length) {
         setTxs(p=>[...refunds,...p]);
-        setStudents(p=>p.map(s=>upd[s.id]!==undefined?{...s,balance:s.balance+upd[s.id]}:s));
       }
+      setStudents(p=>p.map(s=>upd[s.id]!==undefined || pkgRefunds[s.id]
+        ? {...s,balance:s.balance+(upd[s.id]||0),packageLessons:(s.packageLessons||0)+(pkgRefunds[s.id]||0)}
+        : s));
     }
     setLessons(p=>p.filter(l=>l.id!==id));
+    setModal(null);
   };
 
-  const saveAttendance = (lessonId, newAtt) => {
+  const chargeNoShow = (lesson) => {
+    const already = txs.some(tx => tx.lessonId === lesson.id && tx.kind === 'no_show');
+    if (already) return;
+    const ls = getLessonStudents(lesson, students, groups);
+    const charges = ls.map((s,i) => ({
+      id: Date.now()+i+Math.random(),
+      studentId:s.id,
+      type:'charge',
+      amount:getLessonRate(lesson, s, groups),
+      date:getTodayDate(),
+      comment:`Неявка: ${fmtDate(lesson.date)}`,
+      lessonId:lesson.id,
+      kind:'no_show',
+    }));
+    if (!charges.length) return;
+    setTxs(p=>[...charges,...p]);
+    setStudents(p=>p.map(s=>{
+      const charge = charges.find(tx=>tx.studentId===s.id);
+      return charge ? {...s,balance:s.balance-charge.amount} : s;
+    }));
+  };
+
+  const removeNoShowCharges = (lessonId) => {
+    const own = txs.filter(tx => tx.lessonId === lessonId && tx.kind === 'no_show');
+    if (!own.length) return;
+    setTxs(p=>p.filter(tx => !(tx.lessonId === lessonId && tx.kind === 'no_show')));
+    setStudents(p=>p.map(s=>{
+      const refund = own.filter(tx=>tx.studentId===s.id).reduce((sum,tx)=>sum+tx.amount,0);
+      return refund ? {...s,balance:s.balance+refund} : s;
+    }));
+  };
+
+  const removeLessonAttendanceTxs = (lessonId) => {
+    const own = txs.filter(tx => tx.lessonId === lessonId && tx.kind === 'attendance');
+    if (!own.length) return;
+    setTxs(p=>p.filter(tx => !(tx.lessonId === lessonId && tx.kind === 'attendance')));
+    setStudents(p=>p.map(s=>{
+      const delta = own.filter(tx=>tx.studentId===s.id).reduce((sum,tx)=>sum - txDelta(tx),0);
+      return delta ? {...s,balance:s.balance+delta} : s;
+    }));
+  };
+
+  const setLessonStatus = (lessonId, status) => {
+    const lesson = lessons.find(l=>l.id===lessonId);
+    if (!lesson) return;
+    if (lesson.status === 'no_show' && status !== 'no_show') removeNoShowCharges(lessonId);
+    if (lesson.status === 'completed' && status !== 'completed') {
+      removeLessonAttendanceTxs(lessonId);
+      const pkgRefunds = Object.entries(lesson.packageUse || {}).filter(([,used])=>used).map(([sid])=>Number(sid));
+      if (pkgRefunds.length) {
+        setStudents(p=>p.map(s=>pkgRefunds.includes(s.id)?{...s,packageLessons:(s.packageLessons||0)+1}:s));
+      }
+    }
+    if (status === 'no_show') chargeNoShow(lesson);
+    const attendance = status === 'no_show'
+      ? Object.fromEntries(getLessonStudents(lesson, students, groups).map(s=>[s.id,false]))
+      : lesson.attendance;
+    setLessons(p=>p.map(l=>l.id===lessonId?{...l,status,attendance,packageUse:status==='planned'?{}:(l.packageUse||{})}:l));
+    setModal(null);
+  };
+
+  const saveAttendance = (lessonId, newAtt, meta={}) => {
     const lesson = lessons.find(l => l.id === lessonId);
     if (!lesson) return;
-    const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
-    const ls = lesson.type === 'individual'
-      ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
-      : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+    if (lesson.status === 'no_show') removeNoShowCharges(lessonId);
+    const ls = getLessonStudents(lesson, students, groups);
 
     // KEY: always compute diff from the OLD attendance state
     // For planned → completed: charge everyone who IS present now
@@ -690,43 +1349,108 @@ function App() {
     const oldAtt = (lesson.status === 'completed' && lesson.attendance) ? lesson.attendance : {};
     const newTxs = [];
     const upd = {};
+    const updPkg = {};
+    const oldPackageUse = lesson.packageUse || {};
+    const nextPackageUse = {...oldPackageUse};
 
     ls.forEach(s => {
       const was = !!oldAtt[s.id];
       const is  = !!newAtt[s.id];
+      const packageAvailable = (s.packageLessons || 0) + (updPkg[s.id] || 0);
       if (lesson.status === 'planned') {
         // First time completing: charge only present students
         if (is) {
-          const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
-          newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate,
-            date: getTodayDate(), comment: `Урок: ${fmtDate(lesson.date)}`, lessonId});
-          upd[s.id] = (upd[s.id] || 0) - rate;
+          if (packageAvailable > 0) {
+            updPkg[s.id] = (updPkg[s.id] || 0) - 1;
+            nextPackageUse[s.id] = true;
+          } else {
+            const rate = getLessonRate(lesson, s, groups);
+            newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate,
+              date: getTodayDate(), comment: `Урок: ${fmtDate(lesson.date)}`, lessonId, kind:'attendance'});
+            upd[s.id] = (upd[s.id] || 0) - rate;
+            delete nextPackageUse[s.id];
+          }
         }
       } else {
         // Already completed: only apply CHANGES
         if (was === is) return; // no change — skip entirely (prevents double-counting)
-        const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+        const rate = getLessonRate(lesson, s, groups);
         if (was && !is) {
-          // Was present, now absent → refund
-          newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'payment', amount: rate,
-            date: getTodayDate(), comment: `Возврат (отсутствовал): ${fmtDate(lesson.date)}`, lessonId});
-          upd[s.id] = (upd[s.id] || 0) + rate;
+          if (oldPackageUse[s.id]) {
+            updPkg[s.id] = (updPkg[s.id] || 0) + 1;
+            delete nextPackageUse[s.id];
+          } else {
+            // Was present, now absent → refund
+            newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'payment', amount: rate,
+              date: getTodayDate(), comment: `Возврат (отсутствовал): ${fmtDate(lesson.date)}`, lessonId, kind:'attendance'});
+            upd[s.id] = (upd[s.id] || 0) + rate;
+          }
         } else {
-          // Was absent, now present → charge
-          newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate,
-            date: getTodayDate(), comment: `Доп. списание (пришёл): ${fmtDate(lesson.date)}`, lessonId});
-          upd[s.id] = (upd[s.id] || 0) - rate;
+          if (packageAvailable > 0) {
+            updPkg[s.id] = (updPkg[s.id] || 0) - 1;
+            nextPackageUse[s.id] = true;
+          } else {
+            // Was absent, now present → charge
+            newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate,
+              date: getTodayDate(), comment: `Доп. списание (пришёл): ${fmtDate(lesson.date)}`, lessonId, kind:'attendance'});
+            upd[s.id] = (upd[s.id] || 0) - rate;
+            delete nextPackageUse[s.id];
+          }
         }
       }
     });
 
     if (newTxs.length) {
       setTxs(p => [...newTxs, ...p]);
-      setStudents(p => p.map(s => upd[s.id] !== undefined ? {...s, balance: s.balance + upd[s.id]} : s));
     }
-    setLessons(p => p.map(l => l.id === lessonId ? {...l, status:'completed', attendance: newAtt} : l));
+    setStudents(p => p.map(s => upd[s.id] !== undefined || updPkg[s.id] !== undefined
+      ? {...s, balance: s.balance + (upd[s.id] || 0), packageLessons: Math.max(0, (s.packageLessons || 0) + (updPkg[s.id] || 0))}
+      : s));
+    setLessons(p => p.map(l => l.id === lessonId ? {...l, ...meta, status:'completed', attendance: newAtt, packageUse: nextPackageUse} : l));
     setModal(null);
-  };;
+  };
+
+  const closeTodayLessons = () => {
+    const now = new Date();
+    const due = lessons.filter(l => l.status === 'planned' && l.date === getTodayDate() && new Date(`${l.date}T${l.time}`) <= now);
+    if (!due.length) return;
+    if (!confirm(`Закрыть прошедшие уроки за сегодня: ${due.length}? Все ученики будут отмечены присутствующими.`)) return;
+    due.forEach(l => {
+      const att = {};
+      getLessonStudents(l, students, groups).forEach(s => { att[s.id] = true; });
+      saveAttendance(l.id, att);
+    });
+  };
+
+  const resetDemoData = () => {
+    if (!confirm('Сбросить все данные к демо-набору? Текущие изменения сотрутся.')) return;
+    const demo = cloneDemoState();
+    localStorage.removeItem(STORAGE_KEY);
+    setStudents(demo.students);
+    setGroups(demo.groups);
+    setLessons(demo.lessons);
+    setTxs(demo.txs);
+  };
+
+  const exportCsv = () => {
+    const header = ['date','student','type','amount','comment'];
+    const rows = txs.map(tx => {
+      const s = students.find(st=>st.id===tx.studentId);
+      return [tx.date, s?.name || 'Удален', tx.type, tx.amount, tx.comment || '']
+        .map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+    });
+    const blob = new Blob([[header.join(','),...rows].join('\n')], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tutor-finance-${getTodayDate()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleTheme = () => {
+    setSettings(p => ({...p, theme:p.theme === 'dark' ? 'light' : 'dark'}));
+  };
 
   const getLessonName = (l) => l.type==='group'
     ? groups.find(g=>g.id===l.targetId)?.name || '?'
@@ -737,8 +1461,22 @@ function App() {
   // TODAY PAGE
   const PageToday = () => {
     const todayLessons = lessons.filter(l=>l.date===getTodayDate()).sort((a,b)=>a.time.localeCompare(b.time));
-    const debt = students.filter(s=>s.balance<0).reduce((s,st)=>s+Math.abs(st.balance),0);
-    const debtors = students.filter(s=>s.balance<0).length;
+    const activeStudents = students.filter(s=>!s.archived);
+    const debt = activeStudents.filter(s=>s.balance<0).reduce((s,st)=>s+Math.abs(st.balance),0);
+    const debtors = activeStudents.filter(s=>s.balance<0).length;
+    const now = new Date();
+    const plannedToday = todayLessons.filter(l=>l.status==='planned');
+    const dueToday = plannedToday.filter(l=>new Date(`${l.date}T${l.time}`) <= now);
+    const nextLesson = plannedToday.find(l=>new Date(`${l.date}T${l.time}`) > now) || plannedToday[0];
+    const todayTxs = txs.filter(tx=>tx.date===getTodayDate());
+    const earnedToday = todayTxs.filter(tx=>tx.type==='payment').reduce((s,tx)=>s+tx.amount,0);
+    const chargedToday = todayTxs.filter(tx=>tx.type==='charge').reduce((s,tx)=>s+tx.amount,0);
+    const futureLessons = lessons.filter(l=>l.status==='planned' && l.date >= getTodayDate());
+    const attention = [
+      ...activeStudents.filter(s=>s.balance<0).slice(0,4).map(s=>({kind:'Долг', text:`${s.name}: ${money(Math.abs(s.balance))}`, student:s})),
+      ...activeStudents.filter(s=>(s.packageLessons||0)===1).slice(0,3).map(s=>({kind:'Абонемент', text:`${s.name}: остался 1 урок`, student:s})),
+      ...activeStudents.filter(s=>!futureLessons.some(l=>getLessonStudents(l, students, groups).some(st=>st.id===s.id))).slice(0,3).map(s=>({kind:'Нет уроков', text:s.name, student:s})),
+    ].slice(0,6);
 
     return (
       <div>
@@ -759,6 +1497,9 @@ function App() {
               <div style={{fontSize:10,color:'rgba(255,255,255,.8)'}}>{debtors} чел.</div>
             </div>
           )}
+          <button className="btn btn-sm btn-white theme-toggle" onClick={toggleTheme} title={settings.theme==='dark'?'Светлая тема':'Тёмная тема'}>
+            {settings.theme==='dark'?'☀':'☾'}
+          </button>
         </div>
 
         {/* Stats row */}
@@ -769,9 +1510,39 @@ function App() {
           </div>
           <div className="stat-card">
             <div className="stat-label">Учеников</div>
-            <div className="stat-value">{students.length}</div>
+            <div className="stat-value">{activeStudents.length}</div>
           </div>
         </div>
+
+        <div className="card" style={{padding:12,marginBottom:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:10}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="label">Закрытие дня</div>
+              <div style={{fontSize:12,lineHeight:1.6}}>
+                {nextLesson ? <>Следующий: <strong>{nextLesson.time}</strong> · {getLessonName(nextLesson)}</> : 'Все уроки на сегодня обработаны'}
+              </div>
+              <div style={{fontSize:11,color:'#666',marginTop:4}}>
+                Оплаты: {money(earnedToday)} · списания: {money(chargedToday)}
+              </div>
+            </div>
+            <button className={`btn btn-sm ${dueToday.length?'btn-green':'btn-white'}`} disabled={!dueToday.length} onClick={closeTodayLessons}>
+              Закрыть {dueToday.length || ''}
+            </button>
+          </div>
+        </div>
+
+        {attention.length > 0 && (
+          <div className="card" style={{padding:12,marginBottom:16}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:8}}>ТРЕБУЕТ ВНИМАНИЯ</div>
+            {attention.map((item,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:i?'1px solid #ddd':'none'}}>
+                <span className={`badge ${item.kind==='Долг'?'badge-red':item.kind==='Абонемент'?'badge-yellow':'badge-green'}`}>{item.kind}</span>
+                <div style={{fontSize:12,flex:1}}>{item.text}</div>
+                <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'message',payload:{student:item.student}})}>Текст</button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Today's lessons */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
@@ -791,6 +1562,7 @@ function App() {
           <LessonCard key={l.id} lesson={l} name={getLessonName(l)}
             onEdit={()=>setModal({type:'lesson',payload:{lesson:l}})}
             onAttend={()=>setModal({type:'attendance',payload:l})}
+            onStatus={()=>setModal({type:'lessonStatus',payload:l})}
             onDelete={(e)=>delLesson(l.id,e)}
           />
         ))}
@@ -800,7 +1572,7 @@ function App() {
           const upcoming = [];
           for (let i=1;i<7;i++) {
             const d = new Date(); d.setDate(d.getDate()+i);
-            const ds = d.toISOString().split('T')[0];
+            const ds = localDateString(d);
             const ls = lessons.filter(l=>l.date===ds);
             if (ls.length) upcoming.push({date:ds,lessons:ls.sort((a,b)=>a.time.localeCompare(b.time))});
           }
@@ -817,6 +1589,7 @@ function App() {
                     <LessonCard key={l.id} lesson={l} name={getLessonName(l)} compact
                       onEdit={()=>setModal({type:'lesson',payload:{lesson:l}})}
                       onAttend={()=>setModal({type:'attendance',payload:l})}
+                      onStatus={()=>setModal({type:'lessonStatus',payload:l})}
                       onDelete={(e)=>delLesson(l.id,e)}
                     />
                   ))}
@@ -834,6 +1607,10 @@ function App() {
     const [schedView, setSchedView] = useState('week'); // 'week' | 'month'
     const [weekOffset, setWeekOffset] = useState(0);
     const [calMonth, setCalMonth] = useState(new Date());
+    const [schedSubject, setSchedSubject] = useState('all');
+    const scheduleLessons = schedSubject === 'all'
+      ? lessons
+      : lessons.filter(l => getLessonSubject(l, groups) === schedSubject);
 
     // ── WEEK VIEW ──────────────────────────────────────────────────────────────
     const WeekView = () => {
@@ -845,7 +1622,7 @@ function App() {
         mon.setDate(today.getDate() - dow + 1 + offset * 7);
         return Array.from({length:7}, (_,i) => {
           const d = new Date(mon); d.setDate(mon.getDate() + i);
-          return d.toISOString().split('T')[0];
+          return localDateString(d);
         });
       };
       const weekDates = getWeekDates(weekOffset);
@@ -853,7 +1630,7 @@ function App() {
       const today = getTodayDate();
 
       // All unique times in this week, sorted
-      const weekLessons = lessons.filter(l => weekDates.includes(l.date));
+      const weekLessons = scheduleLessons.filter(l => weekDates.includes(l.date));
       const allTimes = [...new Set(weekLessons.map(l=>l.time))].sort();
 
       // Week label
@@ -876,95 +1653,104 @@ function App() {
 
           {/* Grid */}
           <div style={{overflowX:'auto',marginLeft:-16,marginRight:-16,paddingLeft:16,paddingRight:16}}>
-            <div style={{minWidth:400, overflowX:'auto'}}>
-              {/* Header row: empty time col + 7 day cols */}
-              <div style={{display:'grid', gridTemplateColumns:'44px repeat(7, 1fr)', gap:4, marginBottom:6}}>
-                <div/>
-                {weekDates.map((d, i) => {
-                  const isToday = d === today;
-                  const num = new Date(d+'T00:00:00').getDate();
-                  return (
-                    <div key={d} onClick={() => setSelDate(d)}
-                      style={{
-                        textAlign:'center', padding:'6px 2px', cursor:'pointer',
-                        border:'2.5px solid #0a0a0a', borderRadius:4,
-                        background: isToday ? '#0a0a0a' : selDate===d ? '#FFE500' : '#f5f0e8',
-                        color: isToday ? '#FFE500' : '#0a0a0a',
-                        boxShadow: '3px 3px 0 #0a0a0a',
-                      }}>
-                      <div style={{fontFamily:'Unbounded,cursive', fontSize:9, fontWeight:700}}>{DAY_LABELS[i]}</div>
-                      <div style={{fontFamily:'Unbounded,cursive', fontSize:16, fontWeight:900, lineHeight:1}}>{num}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Time rows: for each unique time, render exactly 7 cells in order */}
-              {allTimes.length === 0 ? (
-                <div style={{textAlign:'center', padding:'32px 0', fontFamily:'Unbounded,cursive', fontSize:12, color:'#999', border:'2.5px dashed #ccc', borderRadius:4}}>
-                  Уроков на эту неделю нет
-                </div>
-              ) : allTimes.map(time => {
-                // Pre-build a map: dayIndex(0-6) → lessons array, so each column is deterministic
-                const byDay = {};
-                weekDates.forEach((d, i) => {
-                  byDay[i] = lessons.filter(l => l.date === d && l.time === time);
-                });
-                return (
-                  <div key={time} style={{display:'grid', gridTemplateColumns:'44px repeat(7, 1fr)', gap:4, marginBottom:4}}>
-                    {/* Time label */}
-                    <div style={{display:'flex', alignItems:'center', justifyContent:'center',
-                      fontFamily:'Unbounded,cursive', fontSize:10, fontWeight:700, color:'#666', padding:'4px 0'}}>
-                      {time}
-                    </div>
-                    {/* 7 day columns — indexes 0..6, always all rendered */}
-                    {[0,1,2,3,4,5,6].map(di => {
-                      const cell = byDay[di] || [];
-                      if (cell.length === 0) {
-                        return (
-                          <div key={di}
-                            onClick={() => setModal({type:'lesson', payload:{date: weekDates[di]}})}
-                            style={{minHeight:52, border:'1.5px dashed #ddd', borderRadius:4, cursor:'pointer'}}
-                          />
-                        );
-                      }
+            <div style={{overflowX:'auto', marginLeft:-16, marginRight:-16}}>
+              <table style={{borderCollapse:'separate', borderSpacing:4, minWidth:360, width:'100%', tableLayout:'fixed', paddingLeft:16, paddingRight:16, boxSizing:'border-box'}}>
+                {/* HEADER: time col (narrow) + 7 equal day cols */}
+                <thead>
+                  <tr>
+                    <th style={{width:44}}/>
+                    {weekDates.map((d, i) => {
+                      const isToday = d === today;
+                      const num = new Date(d+'T00:00:00').getDate();
                       return (
-                        <div key={di} style={{display:'flex', flexDirection:'column', gap:2}}>
-                          {cell.map(l => {
-                            const name = getLessonName(l);
-                            const shortName = name.split('(')[0].trim()
-                              .replace('История','Ист.').replace('Общество','Общ.');
-                            const done = l.status === 'completed';
-                            return (
-                              <div key={l.id}
-                                onClick={() => setModal({type:'attendance', payload:l})}
-                                style={{
-                                  background: done ? '#ccc' : l.type==='group' ? '#0057FF' : '#FFE500',
-                                  color: done ? '#555' : l.type==='group' ? '#fff' : '#0a0a0a',
-                                  border:'2px solid #0a0a0a', borderRadius:4,
-                                  padding:'4px 5px', fontSize:9,
-                                  fontFamily:'Unbounded,cursive', fontWeight:700,
-                                  lineHeight:1.3, cursor:'pointer',
-                                  boxShadow: done ? 'none' : '2px 2px 0 #0a0a0a',
-                                  minHeight:52, display:'flex', flexDirection:'column', justifyContent:'space-between',
-                                }}>
-                                <div style={{wordBreak:'break-word'}}>{shortName}</div>
-                                <div style={{fontSize:8, opacity:.7}}>{done ? '✓ готово' : '▶ провести'}</div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <th key={d} onClick={() => setSelDate(d)}
+                          style={{
+                            textAlign:'center', padding:'6px 2px', cursor:'pointer',
+                            border:'2.5px solid #0a0a0a', borderRadius:4,
+                            background: isToday ? '#0a0a0a' : selDate===d ? '#FFE500' : '#f5f0e8',
+                            color: isToday ? '#FFE500' : '#0a0a0a',
+                            boxShadow:'3px 3px 0 #0a0a0a',
+                            fontFamily:'Unbounded,cursive', fontWeight:900,
+                          }}>
+                          <div style={{fontSize:9}}>{DAY_LABELS[i]}</div>
+                          <div style={{fontSize:16, lineHeight:1}}>{num}</div>
+                        </th>
                       );
                     })}
-                  </div>
-                );
-              })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allTimes.length === 0 ? (
+                    <tr><td colSpan={8}>
+                      <div style={{textAlign:'center', padding:'32px 0', fontFamily:'Unbounded,cursive', fontSize:12, color:'#999', border:'2.5px dashed #ccc', borderRadius:4}}>
+                        Уроков на эту неделю нет
+                      </div>
+                    </td></tr>
+                  ) : allTimes.map(time => {
+                    const byDay = {};
+                    weekDates.forEach((d, i) => {
+                      byDay[i] = scheduleLessons.filter(l => l.date === d && l.time === time);
+                    });
+                    return (
+                      <tr key={time}>
+                        {/* Time label cell — same width as header th[0] */}
+                        <td style={{
+                          textAlign:'center', fontFamily:'Unbounded,cursive',
+                          fontSize:10, fontWeight:700, color:'#666',
+                          verticalAlign:'middle', padding:'2px 0', width:44,
+                        }}>{time}</td>
+                        {/* 7 day cells — each guaranteed its column */}
+                        {[0,1,2,3,4,5,6].map(di => {
+                          const cell = byDay[di] || [];
+                          if (cell.length === 0) {
+                            return (
+                              <td key={di} style={{padding:2, verticalAlign:'top'}}>
+                                <div onClick={() => setModal({type:'lesson', payload:{date: weekDates[di]}})}
+                                  style={{minHeight:52, border:'1.5px dashed #ddd', borderRadius:4, cursor:'pointer'}}/>
+                              </td>
+                            );
+                          }
+                          return (
+                            <td key={di} style={{padding:2, verticalAlign:'top'}}>
+                              {cell.map(l => {
+                                const name = getLessonName(l);
+                                const shortName = name.split('(')[0].trim()
+                                  .replace('История','Ист.').replace('Общество','Общ.');
+                                const done = isFinalLesson(l);
+                                const statusInfo = LESSON_STATUS[l.status] || LESSON_STATUS.planned;
+                                return (
+                                  <div key={l.id}
+                                    onClick={() => setModal({type:l.status==='planned'||l.status==='completed'?'attendance':'lessonStatus', payload:l})}
+                                    style={{
+                                      background: done ? '#ddd' : l.type==='group' ? '#0057FF' : '#FFE500',
+                                      color: done ? '#555' : l.type==='group' ? '#fff' : '#0a0a0a',
+                                      border:'2px solid #0a0a0a', borderRadius:4,
+                                      padding:'5px 5px', fontSize:9,
+                                      fontFamily:'Unbounded,cursive', fontWeight:700,
+                                      lineHeight:1.3, cursor:'pointer',
+                                      boxShadow: done ? 'none' : '2px 2px 0 #0a0a0a',
+                                      minHeight:52, display:'flex', flexDirection:'column',
+                                      justifyContent:'space-between', marginBottom:2,
+                                    }}>
+                                    <div style={{wordBreak:'break-word'}}>{shortName}</div>
+                                    <div style={{fontSize:8, opacity:.8}}>{statusInfo.short}</div>
+                                  </div>
+                                );
+                              })}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 
           {/* Selected day detail */}
           {selDate && weekDates.includes(selDate) && (() => {
-            const dl = lessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
+            const dl = scheduleLessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
             const obj = new Date(selDate+'T00:00:00');
             return (
               <div style={{marginTop:16,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
@@ -981,13 +1767,16 @@ function App() {
                   <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий</div>
                 ) : dl.map(l => (
                   <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
-                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:l.status==='completed'?'#999':'#0a0a0a'}}>{l.time}</div>
-                    <div style={{flex:1,fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:l.status==='completed'?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
+                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{l.time}</div>
+                    <div style={{flex:1,fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
                     {l.status==='planned' ? (
                       <button className="btn btn-sm btn-green" onClick={()=>setModal({type:'attendance',payload:l})}><IcoPlay size={13}/></button>
-                    ) : (
+                    ) : l.status==='completed' ? (
                       <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'attendance',payload:l})}><IcoCheck size={13}/></button>
+                    ) : (
+                      <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'lessonStatus',payload:l})}>{LESSON_STATUS[l.status]?.short}</button>
                     )}
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#999'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
                     <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
                   </div>
                 ))}
@@ -1010,7 +1799,7 @@ function App() {
       const fmtDs = (d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 
       const selDateObj = new Date(selDate+'T00:00:00');
-      const selDayLessons = lessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
+      const selDayLessons = scheduleLessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
 
       return (
         <div>
@@ -1035,11 +1824,11 @@ function App() {
             {Array(firstDow).fill(null).map((_,i)=><div key={'e'+i}/>)}
             {Array.from({length:daysInMonth},(_,i)=>i+1).map(day => {
               const ds = fmtDs(day);
-              const dayLess = lessons.filter(l=>l.date===ds);
+              const dayLess = scheduleLessons.filter(l=>l.date===ds);
               const isToday = ds===today;
               const isSel = ds===selDate;
               const planned = dayLess.filter(l=>l.status==='planned').length;
-              const done    = dayLess.filter(l=>l.status==='completed').length;
+              const done    = dayLess.filter(l=>isFinalLesson(l)).length;
               return (
                 <div key={day} onClick={()=>setSelDate(ds)}
                   style={{
@@ -1084,18 +1873,26 @@ function App() {
               <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий — нажмите + чтобы добавить</div>
             ) : selDayLessons.map(l => (
               <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:l.status==='completed'?'#999':'#0a0a0a'}}>{l.time}</div>
+                <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{l.time}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:l.status==='completed'?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
                   <span style={{fontSize:9,background:l.type==='group'?'#0057FF':'#FFE500',color:l.type==='group'?'#fff':'#0a0a0a',padding:'1px 5px',borderRadius:3,fontFamily:'Unbounded,cursive',fontWeight:700}}>
                     {l.type==='group'?'ГР':'ИНД'}
                   </span>
+                  {l.status !== 'planned' && (
+                    <span style={{marginLeft:4,fontSize:9,background:LESSON_STATUS[l.status]?.color || '#ccc',color:'#fff',padding:'1px 5px',borderRadius:3,fontFamily:'Unbounded,cursive',fontWeight:700}}>
+                      {LESSON_STATUS[l.status]?.short}
+                    </span>
+                  )}
                 </div>
                 {l.status==='planned' ? (
                   <button className="btn btn-sm btn-green" onClick={()=>setModal({type:'attendance',payload:l})}><IcoPlay size={13}/></button>
-                ) : (
+                ) : l.status==='completed' ? (
                   <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'attendance',payload:l})}><IcoCheck size={13}/></button>
+                ) : (
+                  <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'lessonStatus',payload:l})}>{LESSON_STATUS[l.status]?.short}</button>
                 )}
+                <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#999'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
                 <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
               </div>
             ))}
@@ -1119,6 +1916,17 @@ function App() {
           </div>
         </div>
 
+        <div className="day-strip" style={{marginBottom:14}}>
+          <button className={`day-btn ${schedSubject==='all'?'active':''}`} onClick={()=>setSchedSubject('all')} style={{minWidth:82}}>
+            <span className="day-btn-name">Все</span>
+          </button>
+          {SUBJECTS.map(subject=>(
+            <button key={subject} className={`day-btn ${schedSubject===subject?'active':''}`} onClick={()=>setSchedSubject(subject)} style={{minWidth:96}}>
+              <span className="day-btn-name">{subject}</span>
+            </button>
+          ))}
+        </div>
+
         {schedView==='week' ? <WeekView/> : <MonthView/>}
       </div>
     );
@@ -1126,49 +1934,119 @@ function App() {
 
   // STUDENTS PAGE
   const PageStudents = () => {
+    const [view, setView] = useState('students');
     const [q, setQ] = useState('');
     const [debtOnly, setDebtOnly] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
+    const [subjectFilter, setSubjectFilter] = useState('all');
     const filtered = students.filter(s => {
+      if (!showArchived && s.archived) return false;
       if (debtOnly && s.balance >= 0) return false;
+      if (subjectFilter !== 'all' && !(s.subjects || []).includes(subjectFilter)) return false;
       return s.name.toLowerCase().includes(q.toLowerCase());
+    });
+    const filteredGroups = groups.filter(g => {
+      if (subjectFilter !== 'all' && g.subject !== subjectFilter) return false;
+      return g.name.toLowerCase().includes(q.toLowerCase());
     });
     return (
       <div>
         <div className="page-title">
-          Ученики
-          <button className="btn btn-sm btn-black" onClick={()=>setModal({type:'student',payload:null})}>
+          {view==='students' ? 'Ученики' : 'Группы'}
+          <button className="btn btn-sm btn-black" onClick={()=>setModal({type:view==='students'?'student':'group',payload:null})}>
             <IcoPlus size={14}/>
           </button>
+        </div>
+        <div className="toggle-row">
+          <button className={`toggle-opt ${view==='students'?'active':''}`} onClick={()=>setView('students')}>Ученики</button>
+          <button className={`toggle-opt ${view==='groups'?'active':''}`} onClick={()=>setView('groups')}>Группы</button>
         </div>
         {/* Search */}
         <div style={{position:'relative',marginBottom:10}}>
           <IcoSearch size={16} cls="" style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',opacity:.5}}/>
           <input className="input" style={{paddingLeft:36}} placeholder="Поиск..." value={q} onChange={e=>setQ(e.target.value)}/>
         </div>
-        <button
-          className={`btn btn-sm btn-full ${debtOnly?'btn-red':'btn-white'}`}
-          style={{marginBottom:14}}
-          onClick={()=>setDebtOnly(!debtOnly)}>
-          {debtOnly ? '✕ Только должники' : 'Только должники'}
-        </button>
+        <div className="day-strip" style={{marginBottom:12}}>
+          <button className={`day-btn ${subjectFilter==='all'?'active':''}`} onClick={()=>setSubjectFilter('all')} style={{minWidth:82}}>
+            <span className="day-btn-name">Все</span>
+          </button>
+          {SUBJECTS.map(subject=>(
+            <button key={subject} className={`day-btn ${subjectFilter===subject?'active':''}`} onClick={()=>setSubjectFilter(subject)} style={{minWidth:96}}>
+              <span className="day-btn-name">{subject}</span>
+            </button>
+          ))}
+        </div>
 
-        {filtered.map(s => (
-          <div key={s.id} className="student-item">
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,marginBottom:4}}>{s.name}</div>
-              <div style={{fontSize:11,color:'#666'}}>{s.rate} ₽/урок · {s.phone}</div>
-              <div style={{marginTop:6}}>
-                <span className={`badge ${s.balance<0?'badge-red':s.balance>0?'badge-green':'badge-yellow'}`}>
-                  {s.balance>0?'+':''}{s.balance} ₽
-                </span>
+        {view==='students' ? (
+          <>
+            <button
+              className={`btn btn-sm btn-full ${debtOnly?'btn-red':'btn-white'}`}
+              style={{marginBottom:8}}
+              onClick={()=>setDebtOnly(!debtOnly)}>
+              {debtOnly ? '✕ Только должники' : 'Только должники'}
+            </button>
+            <button
+              className={`btn btn-sm btn-full ${showArchived?'btn-black':'btn-white'}`}
+              style={{marginBottom:14}}
+              onClick={()=>setShowArchived(!showArchived)}>
+              {showArchived ? 'Скрыть архив' : 'Показать архив'}
+            </button>
+
+            {filtered.map(s => (
+              <div key={s.id} className="student-item" onClick={()=>setModal({type:'studentDetail',payload:s})} style={{cursor:'pointer',opacity:s.archived ? .55 : 1}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,marginBottom:4}}>{s.name}</div>
+                  <div style={{fontSize:11,color:'#666'}}>{money(s.rate)}/урок · {s.phone}</div>
+                  <div style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:5}}>
+                    {(s.subjects || ['История']).map(subject=>(
+                      <span key={subject} className="lesson-tag" style={{background:subjectColor(subject),color:subject==='Общество'||subject==='Математика'?'#0a0a0a':'#fff'}}>
+                        {subject}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{marginTop:6}}>
+                    <span className={`badge ${s.balance<0?'badge-red':s.balance>0?'badge-green':'badge-yellow'}`}>
+                      {s.balance>0?'+':''}{money(s.balance)}
+                    </span>
+                    {(s.packageLessons||0) > 0 && <span className="badge badge-green" style={{marginLeft:6}}>{s.packageLessons} зан.</span>}
+                    {s.archived && <span className="badge badge-yellow" style={{marginLeft:6}}>АРХИВ</span>}
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:8,marginLeft:8}}>
+                  <button title="Карточка" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'studentDetail',payload:s});}}><IcoBook size={18}/></button>
+                  <button title="Сообщение" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'message',payload:{student:s}});}}><IcoPhone size={18}/></button>
+                  <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'student',payload:s});}}><IcoEdit size={18}/></button>
+                  <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();delStudent(s.id);}}><IcoTrash size={18}/></button>
+                </div>
               </div>
-            </div>
-            <div style={{display:'flex',gap:8,marginLeft:8}}>
-              <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>setModal({type:'student',payload:s})}><IcoEdit size={18}/></button>
-              <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>delStudent(s.id)}><IcoTrash size={18}/></button>
-            </div>
-          </div>
-        ))}
+            ))}
+          </>
+        ) : (
+          <>
+            {filteredGroups.map(g => {
+              const memberNames = g.studentIds.map(id=>students.find(s=>s.id===id)?.name).filter(Boolean);
+              const futureCount = lessons.filter(l=>l.type==='group' && l.targetId===g.id && l.status==='planned').length;
+              return (
+                <div key={g.id} className="student-item" style={{opacity:g.archived ? .6 : 1}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,marginBottom:4}}>
+                      {g.name} {g.archived && <span className="badge badge-yellow">АРХИВ</span>}
+                    </div>
+                    <span className="lesson-tag" style={{background:subjectColor(g.subject),color:g.subject==='Общество'||g.subject==='Математика'?'#0a0a0a':'#fff'}}>
+                      {g.subject || 'История'}
+                    </span>
+                    <div style={{fontSize:11,color:'#666',lineHeight:1.5}}>{memberNames.join(', ') || 'Нет учеников'}</div>
+                    <div style={{fontSize:10,color:'#666',marginTop:4}}>Будущих уроков: {futureCount}</div>
+                  </div>
+                  <div style={{display:'flex',gap:8,marginLeft:8}}>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>setModal({type:'group',payload:g})}><IcoEdit size={18}/></button>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>delGroup(g.id)}><IcoTrash size={18}/></button>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
     );
   };
@@ -1177,10 +2055,19 @@ function App() {
   const PageFinance = () => {
     const [finTab, setFinTab] = useState('control'); // 'control' | 'analytics'
     const [analyticsPeriod, setAnalyticsPeriod] = useState('current_month');
+    const [txStudentFilter, setTxStudentFilter] = useState('all');
+    const [txTypeFilter, setTxTypeFilter] = useState('all');
 
-    const debt    = students.filter(s => s.balance < 0).reduce((s, st) => s + Math.abs(st.balance), 0);
-    const prepaid = students.filter(s => s.balance > 0).reduce((s, st) => s + st.balance, 0);
-    const debtors = students.filter(s => s.balance < 0).sort((a, b) => a.balance - b.balance);
+    const activeStudents = students.filter(s => !s.archived);
+    const debt    = activeStudents.filter(s => s.balance < 0).reduce((s, st) => s + Math.abs(st.balance), 0);
+    const prepaid = activeStudents.filter(s => s.balance > 0).reduce((s, st) => s + st.balance, 0);
+    const debtors = activeStudents.filter(s => s.balance < 0).sort((a, b) => a.balance - b.balance);
+    const lowPackages = students.filter(s => !s.archived && (s.packageLessons || 0) > 0 && (s.packageLessons || 0) <= 1);
+    const historyTxs = txs.filter(tx => {
+      if (txStudentFilter !== 'all' && tx.studentId !== Number(txStudentFilter)) return false;
+      if (txTypeFilter !== 'all' && tx.type !== txTypeFilter) return false;
+      return true;
+    });
 
     // Safe quick-pay: only pays the exact outstanding debt (not arbitrary amount)
     const quickPay = (studentId) => {
@@ -1201,9 +2088,9 @@ function App() {
     const inBounds = (ds) => { const d = new Date(ds+'T00:00:00'); return d >= bounds.start && d <= bounds.end; };
 
     // All completed lessons
-    const completedLessons = lessons.filter(l => l.status === 'completed');
+    const completedLessons = lessons.filter(l => l.status === 'completed' || l.status === 'no_show');
     const periodLessons    = lessons.filter(l => inBounds(l.date));
-    const periodCompleted  = periodLessons.filter(l => l.status === 'completed');
+    const periodCompleted  = periodLessons.filter(l => l.status === 'completed' || l.status === 'no_show');
     const periodPlanned    = periodLessons.filter(l => l.status === 'planned');
 
     // Compute per-student stats across ALL time (for skip rate)
@@ -1218,7 +2105,7 @@ function App() {
         ls.forEach(s => {
           if (!stats[s.id]) return;
           const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
-          const present = lesson.attendance?.[s.id] !== false;
+          const present = lesson.status !== 'no_show' && lesson.attendance?.[s.id] !== false;
           stats[s.id].scheduled++;
           if (present) { stats[s.id].attended++; stats[s.id].earned += rate; }
           else          { stats[s.id].skipped++;  stats[s.id].lost   += rate; }
@@ -1246,7 +2133,7 @@ function App() {
         : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
       ls.forEach(s => {
         const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
-        const present = lesson.attendance?.[s.id] !== false;
+        const present = lesson.status !== 'no_show' && lesson.attendance?.[s.id] !== false;
         if (present) periodEarned += rate;
         else         periodLost   += rate;
       });
@@ -1281,7 +2168,7 @@ function App() {
         ls.forEach(s => {
           if (!st[s.id]) return;
           const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
-          const present = lesson.attendance?.[s.id] !== false;
+          const present = lesson.status !== 'no_show' && lesson.attendance?.[s.id] !== false;
           st[s.id].scheduled++;
           if (present) { st[s.id].attended++; st[s.id].earned += rate; }
           else         { st[s.id].lost += rate; }
@@ -1325,24 +2212,62 @@ function App() {
           </>
         )}
 
+        {lowPackages.length > 0 && (
+          <>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:10}}>АБОНЕМЕНТЫ НА ИСХОДЕ</div>
+            {lowPackages.map(s => (
+              <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'12px',marginBottom:8,border:'2.5px solid #FFE500',borderRadius:4,background:'#fffde0',boxShadow:'3px 3px 0 #FFE500'}}>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
+                  <div style={{fontSize:11,color:'#666'}}>осталось {s.packageLessons} занятие</div>
+                </div>
+                <button className="btn btn-sm btn-blue" onClick={() => setModal({type:'package',payload:{student:s}})}>Пополнить</button>
+              </div>
+            ))}
+          </>
+        )}
+
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 10px'}}>
           <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900}}>ИСТОРИЯ</div>
           <button className="btn btn-sm btn-black" onClick={() => setModal({type:'transaction',payload:null})}><IcoPlus size={13}/> Операция</button>
         </div>
-        {txs.slice(0,30).map(tx => {
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
+          <select className="input" value={txStudentFilter} onChange={e=>setTxStudentFilter(e.target.value)} style={{fontSize:11,padding:'8px'}}>
+            <option value="all">Все ученики</option>
+            {students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <select className="input" value={txTypeFilter} onChange={e=>setTxTypeFilter(e.target.value)} style={{fontSize:11,padding:'8px'}}>
+            <option value="all">Все типы</option>
+            <option value="payment">Оплаты</option>
+            <option value="charge">Списания</option>
+          </select>
+        </div>
+        {historyTxs.slice(0,50).map(tx => {
           const s = students.find(st => st.id === tx.studentId);
           return (
-            <div key={tx.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1.5px solid #e0e0e0'}}>
+            <div key={tx.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,padding:'10px 0',borderBottom:'1.5px solid #e0e0e0'}}>
               <div>
                 <div style={{fontWeight:700,fontSize:12}}>{s?.name || 'Удалён'}</div>
                 <div style={{fontSize:10,color:'#888'}}>{fmtDate(tx.date)} · {tx.comment}</div>
               </div>
-              <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:14,color:tx.type==='payment'?'#00C853':'#FF2D2D'}}>
-                {tx.type==='payment'?'+':'-'}{tx.amount} ₽
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:14,color:tx.type==='payment'?'#00C853':'#FF2D2D',minWidth:72,textAlign:'right'}}>
+                  {tx.type==='payment'?'+':'-'}{money(tx.amount)}
+                </div>
+                {!tx.lessonId && (
+                  <>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4}} onClick={()=>setModal({type:'transaction',payload:tx})}><IcoEdit size={15}/></button>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#999'}} onClick={()=>delTx(tx)}><IcoTrash size={15}/></button>
+                  </>
+                )}
               </div>
             </div>
           );
         })}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:14}}>
+          <button className="btn btn-sm btn-white btn-full" onClick={exportCsv}>Экспорт CSV</button>
+          <button className="btn btn-sm btn-red btn-full" onClick={resetDemoData}>Сброс демо</button>
+        </div>
       </div>
     );
 
@@ -1487,9 +2412,10 @@ function App() {
         <LessonModal
           students={students} groups={groups}
           initialDate={modal.payload?.date || getTodayDate()}
+          initialStudentId={modal.payload?.studentId || null}
           lessonToEdit={modal.payload?.lesson || null}
           onClose={()=>setModal(null)}
-          onSave={(data)=>saveLesson(data, modal.payload?.lesson?.id||null)}
+          onSave={(data, options)=>saveLesson(data, modal.payload?.lesson?.id||null, options)}
         />
       )}
       {modal?.type==='attendance' && (
@@ -1499,25 +2425,57 @@ function App() {
       {modal?.type==='student' && (
         <StudentModal student={modal.payload} onClose={()=>setModal(null)} onSave={saveStudent}/>
       )}
+      {modal?.type==='studentDetail' && (
+        <StudentDetailModal student={modal.payload} students={students} lessons={lessons} txs={txs} groups={groups}
+          onClose={()=>setModal(null)}
+          onEdit={()=>setModal({type:'student',payload:modal.payload})}
+          onPay={(studentId)=>{
+            const s = students.find(st=>st.id===studentId);
+            if (s?.balance < 0) saveTx({studentId,type:'payment',amount:Math.abs(s.balance),date:getTodayDate(),comment:'Оплата долга'});
+          }}
+          onLesson={(studentId)=>setModal({type:'lesson',payload:{date:getTodayDate(), studentId}})}
+          onPackage={(student)=>setModal({type:'package',payload:{student}})}
+          onMessage={(student)=>setModal({type:'message',payload:{student}})}
+          onArchive={archiveStudent}
+        />
+      )}
       {modal?.type==='transaction' && (
-        <TransactionModal students={students} onClose={()=>setModal(null)} onSave={saveTx}/>
+        <TransactionModal tx={modal.payload} students={students} onClose={()=>setModal(null)} onSave={saveTx}/>
       )}
       {modal?.type==='group' && (
-        <GroupModal students={students} onClose={()=>setModal(null)} onSave={saveGroup}/>
+        <GroupModal group={modal.payload} students={students} onClose={()=>setModal(null)} onSave={saveGroup}/>
+      )}
+      {modal?.type==='lessonStatus' && (
+        <LessonStatusModal lesson={modal.payload} onClose={()=>setModal(null)} onStatus={setLessonStatus} onDelete={delLesson}
+          onReschedule={(lesson)=>setModal({type:'reschedule',payload:{lesson}})}
+          onMessage={(lesson)=>{
+            const firstStudent = getLessonStudents(lesson, students, groups)[0];
+            setModal({type:'message',payload:{student:firstStudent,lesson}});
+          }}
+        />
+      )}
+      {modal?.type==='package' && (
+        <PackageModal student={modal.payload.student} onClose={()=>setModal(null)} onSave={savePackage}/>
+      )}
+      {modal?.type==='reschedule' && (
+        <RescheduleModal lesson={modal.payload.lesson} onClose={()=>setModal(null)} onSave={rescheduleLesson}/>
+      )}
+      {modal?.type==='message' && modal.payload?.student && (
+        <MessageModal student={modal.payload.student} lesson={modal.payload.lesson || null} groups={groups} lessons={lessons} onClose={()=>setModal(null)}/>
       )}
     </div>
   );
 }
 
 // Shared LessonCard component
-function LessonCard({ lesson, name, onEdit, onAttend, onDelete, compact=false }) {
-  const done = lesson.status==='completed';
+function LessonCard({ lesson, name, onEdit, onAttend, onStatus, onDelete, compact=false }) {
+  const done = isFinalLesson(lesson);
+  const statusInfo = LESSON_STATUS[lesson.status] || LESSON_STATUS.planned;
   return (
-    <div className="lesson-card" style={{opacity:done?.75:1}}>
+    <div className="lesson-card" style={{opacity:done ? .75 : 1}}>
       <div className="lesson-time" style={{background:done?'#333':'#0a0a0a',minWidth:compact?52:62,fontSize:compact?12:14}}>
-        {lesson.time.split(':').join('\n').split('').join('')}
         <span>{lesson.time}</span>
-        {done && <span style={{fontSize:8,color:'#888',marginTop:2}}>DONE</span>}
+        {done && <span style={{fontSize:8,color:'#ddd',marginTop:2}}>{statusInfo.short}</span>}
       </div>
       <div className="lesson-body">
         <div className="lesson-name" style={{fontSize:compact?11:12}}>{name}</div>
@@ -1525,18 +2483,36 @@ function LessonCard({ lesson, name, onEdit, onAttend, onDelete, compact=false })
           <span className="lesson-tag" style={{background:lesson.type==='group'?'#0057FF':'#FFE500',color:lesson.type==='group'?'#fff':'#0a0a0a'}}>
             {lesson.type==='group'?'Группа':'Инд.'}
           </span>
+          <span className="lesson-tag" style={{marginLeft:5,background:subjectColor(lesson.subject || 'История'),color:(lesson.subject==='Общество'||lesson.subject==='Математика')?'#0a0a0a':'#fff'}}>
+            {lesson.subject || 'История'}
+          </span>
+          {lesson.seriesId && <span className="lesson-tag" style={{marginLeft:5,background:'#fff',color:'#0a0a0a'}}>серия</span>}
+          {lesson.homework && <span className="lesson-tag" style={{marginLeft:5,background:'#00C853',color:'#0a0a0a'}}>ДЗ</span>}
+          {lesson.status !== 'planned' && (
+            <span className="lesson-tag" style={{marginLeft:5,background:statusInfo.color,color:'#fff'}}>{statusInfo.label}</span>
+          )}
         </div>
       </div>
       <div className="lesson-actions">
-        {!done ? (
+        {lesson.status==='planned' ? (
           <button className="btn btn-sm btn-green" onClick={e=>{e.stopPropagation();onAttend();}}>
             <IcoPlay size={14}/>
           </button>
-        ) : (
+        ) : lesson.status==='completed' ? (
           <button className="btn btn-sm btn-white" onClick={e=>{e.stopPropagation();onAttend();}}>
             <IcoCheck size={14}/>
           </button>
+        ) : (
+          <button className="btn btn-sm btn-white" onClick={e=>{e.stopPropagation();onStatus();}}>
+            {statusInfo.short}
+          </button>
         )}
+        <button style={{background:'none',border:'none',cursor:'pointer',padding:6,color:'#555'}} onClick={e=>{e.stopPropagation();onEdit();}}>
+          <IcoEdit size={16}/>
+        </button>
+        <button style={{background:'none',border:'none',cursor:'pointer',padding:6,color:'#555'}} onClick={e=>{e.stopPropagation();onStatus();}}>
+          <IcoRepeat size={16}/>
+        </button>
         <button style={{background:'none',border:'none',cursor:'pointer',padding:6,color:'#999'}} onClick={onDelete}>
           <IcoTrash size={16}/>
         </button>

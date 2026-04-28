@@ -1,14 +1,1551 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TutorApp - Управление репетиторством</title>
-    <meta name="description" content="Современное приложение для репетиторов: расписание, ученики, финансы и ИИ-помощник." />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>TutorApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #f5f0e8;
+  --yellow: #FFE500;
+  --red: #FF2D2D;
+  --green: #00C853;
+  --blue: #0057FF;
+  --border: 2.5px solid var(--black);
+  --shadow: 4px 4px 0px var(--black);
+  --shadow-lg: 6px 6px 0px var(--black);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Martian Mono', monospace;
+  background: var(--white);
+  color: var(--black);
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+h1,h2,h3,.heading { font-family: 'Unbounded', cursive; }
+
+/* NAV BAR */
+.navbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; background: var(--black);
+  z-index: 100; border-top: var(--border);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 10px 4px 14px;
+  color: #888; border: none; background: none; cursor: pointer;
+  font-family: 'Martian Mono', monospace; font-size: 9px;
+  gap: 4px; transition: color .15s;
+  border-right: 1px solid #222;
+}
+.nav-btn:last-child { border-right: none; }
+.nav-btn.active { color: var(--yellow); }
+.nav-btn svg { width: 22px; height: 22px; stroke-width: 2px; }
+
+/* MAIN */
+.main { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; }
+
+/* CARDS */
+.card {
+  background: var(--white);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.card-header {
+  background: var(--black); color: var(--yellow);
+  font-family: 'Unbounded', cursive; font-size: 11px;
+  padding: 8px 12px; letter-spacing: .05em; text-transform: uppercase;
+}
+
+/* LESSON CARD */
+.lesson-card {
+  display: flex; align-items: stretch;
+  border: var(--border); box-shadow: var(--shadow);
+  border-radius: 4px; margin-bottom: 10px;
+  background: var(--white); overflow: hidden;
+  cursor: pointer; transition: transform .1s, box-shadow .1s;
+  active: transform: translate(4px,4px);
+}
+.lesson-card:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--black); }
+.lesson-time {
+  min-width: 62px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; background: var(--black); color: var(--yellow);
+  font-family: 'Unbounded', cursive; font-size: 14px; font-weight: 700;
+  padding: 12px 8px; line-height: 1.2;
+}
+.lesson-body { flex: 1; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.lesson-name { font-family: 'Unbounded', cursive; font-size: 12px; font-weight: 700; line-height: 1.3; }
+.lesson-tag {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  padding: 2px 6px; border: 1.5px solid var(--black);
+  border-radius: 2px; text-transform: uppercase; letter-spacing: .05em;
+}
+.lesson-actions { display: flex; align-items: center; padding: 0 8px; gap: 6px; }
+
+/* BUTTONS */
+.btn {
+  font-family: 'Unbounded', cursive; font-weight: 700;
+  border: var(--border); box-shadow: var(--shadow);
+  border-radius: 4px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  font-size: 12px; padding: 10px 16px; background: var(--yellow); color: var(--black);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:active { transform: translate(4px,4px); box-shadow: 0 0 0; }
+.btn-sm { font-size: 10px; padding: 6px 10px; box-shadow: 3px 3px 0 var(--black); }
+.btn-sm:active { transform: translate(3px,3px); box-shadow: 0 0 0; }
+.btn-red { background: var(--red); color: var(--white); }
+.btn-green { background: var(--green); color: var(--black); }
+.btn-black { background: var(--black); color: var(--yellow); }
+.btn-white { background: var(--white); color: var(--black); }
+.btn-blue { background: var(--blue); color: var(--white); }
+.btn-full { width: 100%; justify-content: center; }
+
+/* FAB */
+.fab {
+  position: fixed; right: 16px; bottom: 76px;
+  width: 56px; height: 56px; border-radius: 4px;
+  background: var(--yellow); border: var(--border);
+  box-shadow: var(--shadow-lg); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99; transition: transform .1s, box-shadow .1s;
+}
+.fab:active { transform: translate(6px,6px); box-shadow: 0 0 0; }
+.fab svg { width: 28px; height: 28px; stroke: var(--black); stroke-width: 2.5; }
+
+/* BADGE */
+.badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', cursive; font-size: 9px; font-weight: 900;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border: 1.5px solid var(--black); border-radius: 2px;
+}
+.badge-red { background: var(--red); color: var(--white); }
+.badge-green { background: var(--green); color: var(--black); }
+.badge-yellow { background: var(--yellow); color: var(--black); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+}
+.modal {
+  background: var(--white); border-top: 3px solid var(--black);
+  border-left: var(--border); border-right: var(--border);
+  width: 100%; max-width: 480px; border-radius: 4px 4px 0 0;
+  max-height: 90dvh; overflow-y: auto; padding: 20px 16px 32px;
+}
+.modal-title {
+  font-family: 'Unbounded', cursive; font-size: 16px; font-weight: 900;
+  margin-bottom: 16px; padding-bottom: 12px; border-bottom: var(--border);
+}
+
+/* INPUTS */
+.input {
+  width: 100%; font-family: 'Martian Mono', monospace; font-size: 14px;
+  border: var(--border); border-radius: 4px; padding: 10px 12px;
+  background: var(--white); color: var(--black); outline: none;
+  box-shadow: 3px 3px 0 var(--black);
+}
+.input:focus { background: #fffde0; }
+.label {
+  font-family: 'Unbounded', cursive; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  display: block; margin-bottom: 6px;
+}
+
+/* STAT CARDS */
+.stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-card {
+  border: var(--border); box-shadow: var(--shadow); border-radius: 4px;
+  padding: 12px; background: var(--white);
+}
+.stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: .05em; color: #666; margin-bottom: 4px; }
+.stat-value { font-family: 'Unbounded', cursive; font-size: 22px; font-weight: 900; line-height: 1; }
+
+/* PAGE TITLE */
+.page-title {
+  font-family: 'Unbounded', cursive; font-size: 22px; font-weight: 900;
+  margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+}
+
+/* DAY SELECTOR */
+.day-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; scrollbar-width: none; }
+.day-strip::-webkit-scrollbar { display: none; }
+.day-btn {
+  min-width: 52px; flex-shrink: 0; display: flex; flex-direction: column;
+  align-items: center; padding: 8px 4px; border: var(--border);
+  border-radius: 4px; cursor: pointer; background: var(--white);
+  font-family: 'Unbounded', cursive; transition: transform .1s, box-shadow .1s;
+  box-shadow: 3px 3px 0 var(--black);
+}
+.day-btn.active { background: var(--black); color: var(--yellow); }
+.day-btn:active { transform: translate(3px,3px); box-shadow: 0 0 0; }
+.day-btn-name { font-size: 10px; font-weight: 700; }
+.day-btn-date { font-size: 14px; font-weight: 900; }
+.day-btn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); margin-top: 3px; }
+
+/* STUDENT LIST ITEM */
+.student-item {
+  border: var(--border); box-shadow: var(--shadow); border-radius: 4px;
+  padding: 12px; margin-bottom: 10px; background: var(--white);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* TOGGLE */
+.toggle-row { display: flex; gap: 0; border: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+.toggle-opt {
+  flex: 1; padding: 8px; text-align: center; cursor: pointer;
+  font-family: 'Unbounded', cursive; font-size: 10px; font-weight: 700;
+  border: none; background: var(--white); border-right: var(--border);
+  transition: background .1s;
+}
+.toggle-opt:last-child { border-right: none; }
+.toggle-opt.active { background: var(--black); color: var(--yellow); }
+
+/* CHECKBOX */
+.check-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px; border: var(--border); border-radius: 4px;
+  margin-bottom: 8px; cursor: pointer; background: var(--white);
+  box-shadow: 3px 3px 0 var(--black);
+}
+.check-row.checked { background: #e8ffe8; }
+.check-box {
+  width: 24px; height: 24px; border: var(--border); border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--white); flex-shrink: 0;
+}
+.check-box.checked { background: var(--green); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
+const getTodayDate = () => new Date().toISOString().split('T')[0];
+const todayObj = new Date();
+const currentDay = todayObj.getDay() || 7;
+const getDayDate = (target) => {
+  const d = new Date(todayObj);
+  d.setDate(todayObj.getDate() - currentDay + target);
+  return d.toISOString().split('T')[0];
+};
+const fmtDate = (str) => {
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+};
+const DAYS_SHORT = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const DAY_INDEXES = [1,2,3,4,5,6,0];
+const MONTH_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+// ── AUTO-COMPLETE ──────────────────────────────────────────────────────────────
+const runAutoCompletion = (cls, cst, cg, ctx) => {
+  let updated = false;
+  const now = new Date();
+  let newL = [...cls], newS = [...cst], newT = [...ctx];
+  newL = newL.map(lesson => {
+    const end = new Date(`${lesson.date}T${lesson.time}`);
+    end.setHours(end.getHours() + 1);
+    if (lesson.status === 'planned' && end <= now) {
+      updated = true;
+      const grp = lesson.type === 'group' ? cg.find(g => g.id === lesson.targetId) : null;
+      const lsStudents = lesson.type === 'individual'
+        ? [newS.find(s => s.id === lesson.targetId)].filter(Boolean)
+        : (grp?.studentIds.map(id => newS.find(s => s.id === id)).filter(Boolean) || []);
+      const att = {};
+      lsStudents.forEach(s => {
+        att[s.id] = true;
+        const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+        newT.push({ id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate, date: getTodayDate(), comment:`Авто: ${fmtDate(lesson.date)}`, lessonId: lesson.id });
+        const i = newS.findIndex(st => st.id === s.id);
+        if (i > -1) newS[i] = { ...newS[i], balance: newS[i].balance - rate };
+      });
+      return { ...lesson, status:'completed', attendance: att };
+    }
+    return lesson;
+  });
+  return updated ? { newLessons: newL, newStudents: newS, newTransactions: newT } : null;
+};
+
+// ── MOCK DATA ──────────────────────────────────────────────────────────────────
+const mockStudents = [
+  {id:1,name:'Вика',rate:1300,phone:'+7 900 001',balance:0},{id:2,name:'Алиса',rate:1300,phone:'+7 900 002',balance:0},
+  {id:3,name:'Султан',rate:1500,phone:'+7 900 003',balance:0},{id:4,name:'Али',rate:1500,phone:'+7 900 004',balance:0},
+  {id:5,name:'Андрей',rate:1100,phone:'+7 900 005',balance:0},{id:6,name:'Илья',rate:1100,phone:'+7 900 006',balance:0},
+  {id:7,name:'Кирилл',rate:1500,phone:'+7 900 007',balance:0},{id:8,name:'Ярослав',rate:1500,phone:'+7 900 008',balance:0},
+  {id:9,name:'Миша',rate:1500,phone:'+7 900 009',balance:0},{id:10,name:'Полина',rate:1300,phone:'+7 900 010',balance:0},
+  {id:11,name:'Яна',rate:1300,phone:'+7 900 011',balance:0},{id:12,name:'Ирина',rate:1100,phone:'+7 900 012',balance:0},
+  {id:13,name:'София',rate:1000,phone:'+7 900 013',balance:0},{id:14,name:'Временной',rate:1000,phone:'+7 900 014',balance:0},
+  {id:15,name:'Марк',rate:1300,phone:'+7 900 015',balance:0},{id:16,name:'Анатолий',rate:1300,phone:'+7 900 016',balance:0},
+];
+const mockGroups = [
+  {id:1,name:'История 10 (Вика, Алиса)',studentIds:[1,2]},
+  {id:2,name:'История 10 (Султан, Али)',studentIds:[3,4]},
+  {id:3,name:'Общество 10 (Султан, Андрей, Илья)',studentIds:[3,5,6],rateOverrides:{3:1100}},
+  {id:4,name:'Общество 11 (Кирилл, Ярослав, Миша)',studentIds:[7,8,9]},
+  {id:5,name:'Общество 11 (Полина, Яна)',studentIds:[10,11]},
+  {id:6,name:'История 10 (Андрей, Ирина, Илья)',studentIds:[5,12,6]},
+  {id:7,name:'Общество 9 (София, Временной)',studentIds:[13,14]},
+  {id:8,name:'Общество 10 (Марк, Анатолий, Ирина)',studentIds:[15,16,12]},
+  {id:9,name:'История (Полина, Ярослав, Кирилл)',studentIds:[10,8,7],rateOverrides:{10:600,8:1300,7:1300}},
+];
+const mockLessons = [];
+let lId = 1;
+for (let w = 0; w < 12; w++) {
+  const off = w*7;
+  [[1+off,4+off],[2+off,5+off],[3+off,6+off]].forEach(([a,b],i) => {
+    const configs = [[1,'15:00'],[2,'18:00'],[3,'16:30'],[4,'18:00'],[5,'15:00'],[6,'16:30'],[7,'16:30'],[8,'15:00'],[9,'18:00']];
+    [[a,b]].flat().forEach(day => {
+      const date = getDayDate(day);
+      const isPast = date < getTodayDate();
+      configs.slice(i*3, i*3+3).forEach(([tid, time]) => {
+        mockLessons.push({id:lId++,type:'group',targetId:tid,date,time,status:isPast?'completed':'planned'});
+      });
+    });
+  });
+}
+
+// ── ICONS ──────────────────────────────────────────────────────────────────────
+const Ico = ({p, children, size=22, cls='', sw=2}) =>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" className={cls}>
+    {p ? <path d={p}/> : children}
+  </svg>;
+
+const IcoHome    = (p) => <Ico {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Ico>;
+const IcoCal     = (p) => <Ico {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></Ico>;
+const IcoUsers   = (p) => <Ico {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Ico>;
+const IcoWallet  = (p) => <Ico {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></Ico>;
+const IcoPlus    = (p) => <Ico {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Ico>;
+const IcoX       = (p) => <Ico {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Ico>;
+const IcoEdit    = (p) => <Ico {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></Ico>;
+const IcoTrash   = (p) => <Ico {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></Ico>;
+const IcoPhone   = (p) => <Ico p="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.7 12.34 19.79 19.79 0 0 1 1.61 3.72 2 2 0 0 1 3.59 1.5h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.26a16 16 0 0 0 6.21 6.21l1.62-1.84a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" {...p}/>;
+const IcoCheck   = (p) => <Ico {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Ico>;
+const IcoPlay    = (p) => <Ico {...p}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></Ico>;
+const IcoChevL   = (p) => <Ico {...p}><polyline points="15 18 9 12 15 6"/></Ico>;
+const IcoChevR   = (p) => <Ico {...p}><polyline points="9 18 15 12 9 6"/></Ico>;
+const IcoRepeat  = (p) => <Ico {...p}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></Ico>;
+const IcoStar    = (p) => <Ico {...p}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></Ico>;
+const IcoLoader  = (p) => <Ico {...p}><path d="M21 12a9 9 0 1 1-6.2-8.6" cls="spin"/></Ico>;
+const IcoSearch  = (p) => <Ico {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Ico>;
+const IcoBook    = (p) => <Ico {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Ico>;
+
+// ── MODALS ─────────────────────────────────────────────────────────────────────
+function Modal({ title, onClose, children }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,paddingBottom:12,borderBottom:'2.5px solid #0a0a0a'}}>
+          <div className="modal-title" style={{marginBottom:0,paddingBottom:0,borderBottom:'none'}}>{title}</div>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',padding:4}}><IcoX size={20}/></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FormField({ label, children }) {
+  return <div style={{marginBottom:14}}><label className="label">{label}</label>{children}</div>;
+}
+
+function StudentModal({ student, onClose, onSave }) {
+  const [name, setName]   = useState(student?.name || '');
+  const [rate, setRate]   = useState(student?.rate || 1500);
+  const [phone, setPhone] = useState(student?.phone || '');
+  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; onSave({name,rate:Number(rate),phone}); };
+  return (
+    <Modal title={student ? 'Редактировать' : 'Новый ученик'} onClose={onClose}>
+      <form onSubmit={submit}>
+        <FormField label="Имя"><input className="input" required value={name} onChange={e=>setName(e.target.value)} placeholder="ФИО"/></FormField>
+        <FormField label="Ставка ₽/урок"><input className="input" type="number" required value={rate} onChange={e=>setRate(e.target.value)}/></FormField>
+        <FormField label="Телефон"><input className="input" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+7 ..."/></FormField>
+        <div style={{display:'flex',gap:10,marginTop:8}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" className="btn btn-black btn-full">Сохранить</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function GroupModal({ students, onClose, onSave }) {
+  const [name, setName] = useState('');
+  const [sel, setSel]   = useState([]);
+  const toggle = (id) => setSel(p => p.includes(id) ? p.filter(x=>x!==id) : [...p,id]);
+  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; onSave({name, studentIds: sel}); };
+  return (
+    <Modal title="Новая группа" onClose={onClose}>
+      <form onSubmit={submit}>
+        <FormField label="Название"><input className="input" required value={name} onChange={e=>setName(e.target.value)}/></FormField>
+        <div className="label" style={{marginBottom:8}}>Ученики</div>
+        <div style={{maxHeight:240,overflowY:'auto'}}>
+          {students.map(s => (
+            <div key={s.id} className={`check-row ${sel.includes(s.id)?'checked':''}`} onClick={()=>toggle(s.id)}>
+              <span style={{fontWeight:700}}>{s.name}</span>
+              <div className={`check-box ${sel.includes(s.id)?'checked':''}`}>
+                {sel.includes(s.id) && <IcoCheck size={14} style={{stroke:'#0a0a0a'}}/>}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:'flex',gap:10,marginTop:12}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" className="btn btn-black btn-full">Создать</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function TransactionModal({ students, onClose, onSave }) {
+  const [sid, setSid]   = useState(students[0]?.id || '');
+  const [type, setType] = useState('payment');
+  const [amt, setAmt]   = useState('');
+  const submit = (e) => { e.preventDefault(); onSave({studentId:Number(sid),type,amount:Number(amt),date:getTodayDate(),comment:''}); };
+  return (
+    <Modal title="Новая операция" onClose={onClose}>
+      <form onSubmit={submit}>
+        <FormField label="Ученик">
+          <select className="input" value={sid} onChange={e=>setSid(e.target.value)}>
+            {students.map(s=><option key={s.id} value={s.id}>{s.name} ({s.balance > 0 ? '+':''}{s.balance} ₽)</option>)}
+          </select>
+        </FormField>
+        <div className="toggle-row">
+          <button type="button" className={`toggle-opt ${type==='payment'?'active':''}`} onClick={()=>setType('payment')}>+ Оплата</button>
+          <button type="button" className={`toggle-opt ${type==='charge'?'active':''}`} onClick={()=>setType('charge')}>− Списание</button>
+        </div>
+        <FormField label="Сумма ₽"><input className="input" type="number" required min="1" value={amt} onChange={e=>setAmt(e.target.value)} placeholder="0"/></FormField>
+        <div style={{display:'flex',gap:10,marginTop:8}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" className={`btn btn-full ${type==='payment'?'btn-green':'btn-red'}`}>Провести</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function LessonModal({ students, groups, initialDate, lessonToEdit, onClose, onSave }) {
+  const [type, setType]       = useState(lessonToEdit?.type || 'group');
+  const [targetId, setTgt]    = useState(lessonToEdit ? String(lessonToEdit.targetId) : '');
+  const [date, setDate]       = useState(lessonToEdit?.date || initialDate || getTodayDate());
+  const [time, setTime]       = useState(lessonToEdit?.time || '15:00');
+  const [days, setDays]       = useState([]);
+  const [recurring, setRec]   = useState(false);
+  const [weeks, setWeeks]     = useState(4);
+
+  useEffect(() => {
+    if (!lessonToEdit && days.length === 0 && date) setDays([new Date(date).getDay()]);
+  }, [date]);
+  useEffect(() => {
+    if (type==='individual' && students.length && !targetId) setTgt(String(students[0].id));
+    if (type==='group' && groups.length && (!targetId || !groups.find(g=>g.id===Number(targetId)))) setTgt(String(groups[0].id));
+  }, [type]);
+
+  const toggleDay = (d) => {
+    if (days.includes(d)) { if (days.length > 1) setDays(days.filter(x=>x!==d)); }
+    else setDays([...days, d].sort());
+  };
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!targetId) return;
+    const base = { type, targetId: Number(targetId), time };
+    if (lessonToEdit) { onSave([{...base, date}]); return; }
+    const arr = [];
+    const [y,m,dd] = date.split('-').map(Number);
+    const baseDate = new Date(y, m-1, dd);
+    days.forEach(di => {
+      let iter = new Date(baseDate);
+      const curr = iter.getDay();
+      iter.setDate(iter.getDate() + (di - curr + 7) % 7);
+      const wc = recurring ? weeks : 1;
+      for (let i = 0; i < wc; i++) {
+        const nd = new Date(iter); nd.setDate(iter.getDate() + i*7);
+        arr.push({...base, date:`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`});
+      }
+    });
+    onSave(arr);
+  };
+
+  return (
+    <Modal title={lessonToEdit ? 'Изменить занятие' : 'Новое занятие'} onClose={onClose}>
+      <form onSubmit={submit}>
+        <div className="toggle-row" style={{marginBottom:14}}>
+          <button type="button" className={`toggle-opt ${type==='group'?'active':''}`} onClick={()=>setType('group')}>Группа</button>
+          <button type="button" className={`toggle-opt ${type==='individual'?'active':''}`} onClick={()=>setType('individual')}>Индивидуально</button>
+        </div>
+        <FormField label={type==='group'?'Группа':'Ученик'}>
+          <select className="input" required value={targetId} onChange={e=>setTgt(e.target.value)}>
+            {type==='individual'
+              ? students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)
+              : groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
+        </FormField>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+          <div><label className="label">{lessonToEdit?'Дата':'Дата начала'}</label><input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></div>
+          <div><label className="label">Время</label><input className="input" type="time" required value={time} onChange={e=>setTime(e.target.value)}/></div>
+        </div>
+        {!lessonToEdit && (
+          <div style={{background:'#fffde0',border:'2.5px solid #0a0a0a',borderRadius:4,padding:12,marginBottom:14}}>
+            <div className="label" style={{marginBottom:8}}>Дни недели</div>
+            <div style={{display:'flex',gap:6,justifyContent:'space-between'}}>
+              {DAY_INDEXES.map(i => (
+                <button key={i} type="button" onClick={()=>toggleDay(i)}
+                  style={{
+                    width:36,height:36,border:'2.5px solid #0a0a0a',borderRadius:4,cursor:'pointer',
+                    fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,
+                    background: days.includes(i) ? '#0a0a0a' : '#f5f0e8',
+                    color: days.includes(i) ? '#FFE500' : '#0a0a0a',
+                    boxShadow: days.includes(i) ? 'none' : '2px 2px 0 #0a0a0a',
+                  }}>
+                  {DAYS_SHORT[i]}
+                </button>
+              ))}
+            </div>
+            <div style={{marginTop:10,display:'flex',alignItems:'center',gap:8}}>
+              <div className={`check-box ${recurring?'checked':''}`} onClick={()=>setRec(!recurring)} style={{cursor:'pointer'}}>
+                {recurring && <IcoCheck size={14}/>}
+              </div>
+              <span style={{fontSize:11,fontFamily:'Unbounded,cursive',fontWeight:700}}>Повторять еженедельно</span>
+            </div>
+            {recurring && (
+              <div style={{marginTop:8,display:'flex',alignItems:'center',gap:8}}>
+                <span style={{fontSize:11}}>на</span>
+                <select className="input" value={weeks} onChange={e=>setWeeks(Number(e.target.value))} style={{width:'auto',padding:'6px 8px'}}>
+                  {[2,3,4,5,8,12,16].map(w=><option key={w} value={w}>{w} нед.</option>)}
+                </select>
+                <span style={{fontSize:11}}>вперёд</span>
+              </div>
+            )}
+          </div>
+        )}
+        <div style={{display:'flex',gap:10,marginTop:8}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" disabled={!targetId} className="btn btn-black btn-full">
+            {lessonToEdit ? 'Сохранить' : 'Создать'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
+  const group = lesson.type === 'group' ? groups.find(g=>g.id===lesson.targetId) : null;
+  const ls = useMemo(() =>
+    lesson.type==='individual'
+      ? [students.find(s=>s.id===lesson.targetId)].filter(Boolean)
+      : (group?.studentIds.map(id=>students.find(s=>s.id===id)).filter(Boolean)||[]),
+    [lesson,students,groups]);
+
+  const [att, setAtt] = useState(() => {
+    if (lesson.status==='completed' && lesson.attendance) return lesson.attendance;
+    const a={}; ls.forEach(s=>a[s.id]=true); return a;
+  });
+
+  const submit = (e) => { e.preventDefault(); onSave(lesson.id, att); };
+
+  return (
+    <Modal title="Посещаемость" onClose={onClose}>
+      <div style={{background:'#fffde0',border:'2.5px solid #0a0a0a',borderRadius:4,padding:10,marginBottom:14,fontSize:12}}>
+        <strong>{fmtDate(lesson.date)}</strong> в <strong>{lesson.time}</strong>
+        <div style={{marginTop:4,color:'#444'}}>Снимите галочку — деньги вернутся на баланс</div>
+      </div>
+      <form onSubmit={submit}>
+        {ls.map(s => {
+          const rate = group?.rateOverrides?.[s.id] ?? s.rate;
+          const present = att[s.id] || false;
+          return (
+            <div key={s.id} className={`check-row ${present?'checked':''}`} onClick={()=>setAtt(p=>({...p,[s.id]:!p[s.id]}))}>
+              <div>
+                <div style={{fontWeight:700,textDecoration:present?'none':'line-through',color:present?'#0a0a0a':'#aaa'}}>{s.name}</div>
+                <div style={{fontSize:11,color:'#666'}}>{rate} ₽</div>
+              </div>
+              <div className={`check-box ${present?'checked':''}`}>
+                {present && <IcoCheck size={14}/>}
+              </div>
+            </div>
+          );
+        })}
+        <div style={{display:'flex',gap:10,marginTop:12}}>
+          <button type="button" className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+          <button type="submit" className="btn btn-green btn-full">
+            {lesson.status==='completed' ? 'Сохранить' : 'Завершить урок'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ── MAIN APP ───────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab]           = useState('today');
+  const [students, setStudents] = useState(mockStudents);
+  const [groups, setGroups]     = useState(mockGroups);
+  const [lessons, setLessons]   = useState(mockLessons);
+  const [txs, setTxs]           = useState([]);
+  const [loaded, setLoaded]     = useState(false);
+
+  // selected date for schedule tab
+  const [selDate, setSelDate]   = useState(getTodayDate());
+
+  // modals
+  const [modal, setModal]       = useState(null); // { type, payload }
+
+  useEffect(() => {
+    const r = runAutoCompletion(mockLessons, mockStudents, mockGroups, []);
+    if (r) { setLessons(r.newLessons); setStudents(r.newStudents); setTxs(r.newTransactions); }
+    setLoaded(true);
+  }, []);
+
+  // ── handlers ──
+  const saveStudent = (data) => {
+    const edit = modal?.payload;
+    if (edit) setStudents(p => p.map(s => s.id===edit.id ? {...s,...data} : s));
+    else setStudents(p => [...p, {...data, id: Date.now(), balance:0}]);
+    setModal(null);
+  };
+  const delStudent = (id) => {
+    if (!confirm('Удалить ученика?')) return;
+    setStudents(p => p.filter(s=>s.id!==id));
+    setGroups(p => p.map(g=>({...g,studentIds:g.studentIds.filter(x=>x!==id)})));
+  };
+  const saveGroup = (data) => { setGroups(p=>[...p,{...data,id:Date.now()}]); setModal(null); };
+  const delGroup  = (id) => { if(confirm('Удалить группу?')) setGroups(p=>p.filter(g=>g.id!==id)); };
+
+  const saveTx = (data) => {
+    const tx = {...data, id:Date.now()};
+    setTxs(p=>[tx,...p]);
+    setStudents(p=>p.map(s=>{
+      if(s.id!==data.studentId) return s;
+      const delta = data.type==='payment' ? Number(data.amount) : -Number(data.amount);
+      return {...s, balance: s.balance+delta};
+    }));
+    setModal(null);
+  };
+
+  const saveLesson = (data, editId=null) => {
+    if (editId) setLessons(p=>p.map(l=>l.id===editId?{...l,...data[0]}:l));
+    else {
+      const arr = Array.isArray(data)?data:[data];
+      setLessons(p=>[...p,...arr.map((l,i)=>({...l,id:Date.now()+i,status:'planned'}))]);
+    }
+    setModal(null);
+  };
+
+  const delLesson = (id, e) => {
+    if(e) e.stopPropagation();
+    if(!confirm('Удалить занятие?')) return;
+    const lesson = lessons.find(l=>l.id===id);
+    if (lesson?.status==='completed') {
+      const grp = lesson.type==='group' ? groups.find(g=>g.id===lesson.targetId) : null;
+      const refunds=[]; const upd={};
+      Object.entries(lesson.attendance||{}).forEach(([sid,pres])=>{
+        if(!pres) return;
+        const s = students.find(st=>st.id===Number(sid));
+        if(!s) return;
+        const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+        refunds.push({id:Date.now()+Math.random(),studentId:s.id,type:'payment',amount:rate,date:getTodayDate(),comment:`Отмена: ${fmtDate(lesson.date)}`});
+        upd[s.id] = (upd[s.id]||0) + rate;
+      });
+      if (refunds.length) {
+        setTxs(p=>[...refunds,...p]);
+        setStudents(p=>p.map(s=>upd[s.id]!==undefined?{...s,balance:s.balance+upd[s.id]}:s));
+      }
+    }
+    setLessons(p=>p.filter(l=>l.id!==id));
+  };
+
+  const saveAttendance = (lessonId, newAtt) => {
+    const lesson = lessons.find(l => l.id === lessonId);
+    if (!lesson) return;
+    const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+    const ls = lesson.type === 'individual'
+      ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+      : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+
+    // KEY: always compute diff from the OLD attendance state
+    // For planned → completed: charge everyone who IS present now
+    // For completed → edited: only charge/refund the DELTA (who changed status)
+    const oldAtt = (lesson.status === 'completed' && lesson.attendance) ? lesson.attendance : {};
+    const newTxs = [];
+    const upd = {};
+
+    ls.forEach(s => {
+      const was = !!oldAtt[s.id];
+      const is  = !!newAtt[s.id];
+      if (lesson.status === 'planned') {
+        // First time completing: charge only present students
+        if (is) {
+          const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+          newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate,
+            date: getTodayDate(), comment: `Урок: ${fmtDate(lesson.date)}`, lessonId});
+          upd[s.id] = (upd[s.id] || 0) - rate;
+        }
+      } else {
+        // Already completed: only apply CHANGES
+        if (was === is) return; // no change — skip entirely (prevents double-counting)
+        const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+        if (was && !is) {
+          // Was present, now absent → refund
+          newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'payment', amount: rate,
+            date: getTodayDate(), comment: `Возврат (отсутствовал): ${fmtDate(lesson.date)}`, lessonId});
+          upd[s.id] = (upd[s.id] || 0) + rate;
+        } else {
+          // Was absent, now present → charge
+          newTxs.push({id: Date.now()+Math.random(), studentId: s.id, type:'charge', amount: rate,
+            date: getTodayDate(), comment: `Доп. списание (пришёл): ${fmtDate(lesson.date)}`, lessonId});
+          upd[s.id] = (upd[s.id] || 0) - rate;
+        }
+      }
+    });
+
+    if (newTxs.length) {
+      setTxs(p => [...newTxs, ...p]);
+      setStudents(p => p.map(s => upd[s.id] !== undefined ? {...s, balance: s.balance + upd[s.id]} : s));
+    }
+    setLessons(p => p.map(l => l.id === lessonId ? {...l, status:'completed', attendance: newAtt} : l));
+    setModal(null);
+  };;
+
+  const getLessonName = (l) => l.type==='group'
+    ? groups.find(g=>g.id===l.targetId)?.name || '?'
+    : students.find(s=>s.id===l.targetId)?.name || '?';
+
+  // ── PAGES ──────────────────────────────────────────────────────────────────
+
+  // TODAY PAGE
+  const PageToday = () => {
+    const todayLessons = lessons.filter(l=>l.date===getTodayDate()).sort((a,b)=>a.time.localeCompare(b.time));
+    const debt = students.filter(s=>s.balance<0).reduce((s,st)=>s+Math.abs(st.balance),0);
+    const debtors = students.filter(s=>s.balance<0).length;
+
+    return (
+      <div>
+        {/* Header */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
+          <div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:11,color:'#666',textTransform:'uppercase',letterSpacing:'.05em'}}>
+              {new Date().toLocaleDateString('ru-RU',{weekday:'long'})}
+            </div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:28,fontWeight:900,lineHeight:1.1}}>
+              {new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}
+            </div>
+          </div>
+          {debt > 0 && (
+            <div style={{background:'#FF2D2D',border:'2.5px solid #0a0a0a',borderRadius:4,padding:'8px 12px',boxShadow:'4px 4px 0 #0a0a0a'}}>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'#fff',textTransform:'uppercase'}}>Долги</div>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:16,fontWeight:900,color:'#fff'}}>{debt.toLocaleString()} ₽</div>
+              <div style={{fontSize:10,color:'rgba(255,255,255,.8)'}}>{debtors} чел.</div>
+            </div>
+          )}
+        </div>
+
+        {/* Stats row */}
+        <div className="stat-row">
+          <div className="stat-card" style={{background:'#0a0a0a',color:'#FFE500'}}>
+            <div className="stat-label" style={{color:'#888'}}>Уроков сегодня</div>
+            <div className="stat-value">{todayLessons.length}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-label">Учеников</div>
+            <div className="stat-value">{students.length}</div>
+          </div>
+        </div>
+
+        {/* Today's lessons */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <div style={{fontFamily:'Unbounded,cursive',fontSize:13,fontWeight:900}}>СЕГОДНЯ</div>
+          <button className="btn btn-sm btn-black" onClick={()=>setModal({type:'lesson',payload:{date:getTodayDate()}})}>
+            <IcoPlus size={14}/> Добавить
+          </button>
+        </div>
+
+        {todayLessons.length === 0 ? (
+          <div className="card" style={{padding:24,textAlign:'center'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:13,color:'#999',lineHeight:1.5}}>
+              Уроков нет
+            </div>
+          </div>
+        ) : todayLessons.map(l => (
+          <LessonCard key={l.id} lesson={l} name={getLessonName(l)}
+            onEdit={()=>setModal({type:'lesson',payload:{lesson:l}})}
+            onAttend={()=>setModal({type:'attendance',payload:l})}
+            onDelete={(e)=>delLesson(l.id,e)}
+          />
+        ))}
+
+        {/* Upcoming (next 6 days) */}
+        {(() => {
+          const upcoming = [];
+          for (let i=1;i<7;i++) {
+            const d = new Date(); d.setDate(d.getDate()+i);
+            const ds = d.toISOString().split('T')[0];
+            const ls = lessons.filter(l=>l.date===ds);
+            if (ls.length) upcoming.push({date:ds,lessons:ls.sort((a,b)=>a.time.localeCompare(b.time))});
+          }
+          if (!upcoming.length) return null;
+          return (
+            <div style={{marginTop:20}}>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:13,fontWeight:900,marginBottom:10}}>БЛИЖАЙШИЕ</div>
+              {upcoming.map(({date,lessons:ls}) => (
+                <div key={date} style={{marginBottom:8}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,color:'#666',marginBottom:6,textTransform:'uppercase'}}>
+                    {new Date(date+'T00:00:00').toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'short'})}
+                  </div>
+                  {ls.map(l => (
+                    <LessonCard key={l.id} lesson={l} name={getLessonName(l)} compact
+                      onEdit={()=>setModal({type:'lesson',payload:{lesson:l}})}
+                      onAttend={()=>setModal({type:'attendance',payload:l})}
+                      onDelete={(e)=>delLesson(l.id,e)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </div>
+    );
+  };
+
+  // SCHEDULE PAGE
+  const PageSchedule = () => {
+    const [schedView, setSchedView] = useState('week'); // 'week' | 'month'
+    const [weekOffset, setWeekOffset] = useState(0);
+    const [calMonth, setCalMonth] = useState(new Date());
+
+    // ── WEEK VIEW ──────────────────────────────────────────────────────────────
+    const WeekView = () => {
+      // Mon–Sun of selected week
+      const getWeekDates = (offset) => {
+        const today = new Date();
+        const dow = today.getDay() || 7; // Mon=1..Sun=7
+        const mon = new Date(today);
+        mon.setDate(today.getDate() - dow + 1 + offset * 7);
+        return Array.from({length:7}, (_,i) => {
+          const d = new Date(mon); d.setDate(mon.getDate() + i);
+          return d.toISOString().split('T')[0];
+        });
+      };
+      const weekDates = getWeekDates(weekOffset);
+      const DAY_LABELS = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+      const today = getTodayDate();
+
+      // All unique times in this week, sorted
+      const weekLessons = lessons.filter(l => weekDates.includes(l.date));
+      const allTimes = [...new Set(weekLessons.map(l=>l.time))].sort();
+
+      // Week label
+      const [wStart, wEnd] = [weekDates[0], weekDates[6]];
+      const fmtShort = (ds) => new Date(ds+'T00:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+
+      return (
+        <div>
+          {/* Week nav */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+            <button className="btn btn-sm btn-white" onClick={()=>setWeekOffset(w=>w-1)}><IcoChevL size={16}/></button>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>
+                {weekOffset===0 ? 'ЭТА НЕДЕЛЯ' : weekOffset===1 ? 'СЛЕДУЮЩАЯ' : weekOffset===-1 ? 'ПРОШЛАЯ' : `${weekOffset>0?'+':''}${weekOffset} НЕД.`}
+              </div>
+              <div style={{fontSize:10,color:'#666'}}>{fmtShort(wStart)} — {fmtShort(wEnd)}</div>
+            </div>
+            <button className="btn btn-sm btn-white" onClick={()=>setWeekOffset(w=>w+1)}><IcoChevR size={16}/></button>
+          </div>
+
+          {/* Grid */}
+          <div style={{overflowX:'auto',marginLeft:-16,marginRight:-16,paddingLeft:16,paddingRight:16}}>
+            <div style={{minWidth:400, overflowX:'auto'}}>
+              {/* Header row: empty time col + 7 day cols */}
+              <div style={{display:'grid', gridTemplateColumns:'44px repeat(7, 1fr)', gap:4, marginBottom:6}}>
+                <div/>
+                {weekDates.map((d, i) => {
+                  const isToday = d === today;
+                  const num = new Date(d+'T00:00:00').getDate();
+                  return (
+                    <div key={d} onClick={() => setSelDate(d)}
+                      style={{
+                        textAlign:'center', padding:'6px 2px', cursor:'pointer',
+                        border:'2.5px solid #0a0a0a', borderRadius:4,
+                        background: isToday ? '#0a0a0a' : selDate===d ? '#FFE500' : '#f5f0e8',
+                        color: isToday ? '#FFE500' : '#0a0a0a',
+                        boxShadow: '3px 3px 0 #0a0a0a',
+                      }}>
+                      <div style={{fontFamily:'Unbounded,cursive', fontSize:9, fontWeight:700}}>{DAY_LABELS[i]}</div>
+                      <div style={{fontFamily:'Unbounded,cursive', fontSize:16, fontWeight:900, lineHeight:1}}>{num}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Time rows: for each unique time, render exactly 7 cells in order */}
+              {allTimes.length === 0 ? (
+                <div style={{textAlign:'center', padding:'32px 0', fontFamily:'Unbounded,cursive', fontSize:12, color:'#999', border:'2.5px dashed #ccc', borderRadius:4}}>
+                  Уроков на эту неделю нет
+                </div>
+              ) : allTimes.map(time => {
+                // Pre-build a map: dayIndex(0-6) → lessons array, so each column is deterministic
+                const byDay = {};
+                weekDates.forEach((d, i) => {
+                  byDay[i] = lessons.filter(l => l.date === d && l.time === time);
+                });
+                return (
+                  <div key={time} style={{display:'grid', gridTemplateColumns:'44px repeat(7, 1fr)', gap:4, marginBottom:4}}>
+                    {/* Time label */}
+                    <div style={{display:'flex', alignItems:'center', justifyContent:'center',
+                      fontFamily:'Unbounded,cursive', fontSize:10, fontWeight:700, color:'#666', padding:'4px 0'}}>
+                      {time}
+                    </div>
+                    {/* 7 day columns — indexes 0..6, always all rendered */}
+                    {[0,1,2,3,4,5,6].map(di => {
+                      const cell = byDay[di] || [];
+                      if (cell.length === 0) {
+                        return (
+                          <div key={di}
+                            onClick={() => setModal({type:'lesson', payload:{date: weekDates[di]}})}
+                            style={{minHeight:52, border:'1.5px dashed #ddd', borderRadius:4, cursor:'pointer'}}
+                          />
+                        );
+                      }
+                      return (
+                        <div key={di} style={{display:'flex', flexDirection:'column', gap:2}}>
+                          {cell.map(l => {
+                            const name = getLessonName(l);
+                            const shortName = name.split('(')[0].trim()
+                              .replace('История','Ист.').replace('Общество','Общ.');
+                            const done = l.status === 'completed';
+                            return (
+                              <div key={l.id}
+                                onClick={() => setModal({type:'attendance', payload:l})}
+                                style={{
+                                  background: done ? '#ccc' : l.type==='group' ? '#0057FF' : '#FFE500',
+                                  color: done ? '#555' : l.type==='group' ? '#fff' : '#0a0a0a',
+                                  border:'2px solid #0a0a0a', borderRadius:4,
+                                  padding:'4px 5px', fontSize:9,
+                                  fontFamily:'Unbounded,cursive', fontWeight:700,
+                                  lineHeight:1.3, cursor:'pointer',
+                                  boxShadow: done ? 'none' : '2px 2px 0 #0a0a0a',
+                                  minHeight:52, display:'flex', flexDirection:'column', justifyContent:'space-between',
+                                }}>
+                                <div style={{wordBreak:'break-word'}}>{shortName}</div>
+                                <div style={{fontSize:8, opacity:.7}}>{done ? '✓ готово' : '▶ провести'}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Selected day detail */}
+          {selDate && weekDates.includes(selDate) && (() => {
+            const dl = lessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
+            const obj = new Date(selDate+'T00:00:00');
+            return (
+              <div style={{marginTop:16,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
+                <div style={{background:'#0a0a0a',color:'#FFE500',padding:'8px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>
+                    {obj.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'}).toUpperCase()}
+                  </span>
+                  <button className="btn btn-sm" style={{padding:'4px 8px',fontSize:9,background:'#FFE500',color:'#0a0a0a',boxShadow:'2px 2px 0 #FFE500'}}
+                    onClick={()=>setModal({type:'lesson',payload:{date:selDate}})}>
+                    + УРОК
+                  </button>
+                </div>
+                {dl.length === 0 ? (
+                  <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий</div>
+                ) : dl.map(l => (
+                  <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
+                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:l.status==='completed'?'#999':'#0a0a0a'}}>{l.time}</div>
+                    <div style={{flex:1,fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:l.status==='completed'?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
+                    {l.status==='planned' ? (
+                      <button className="btn btn-sm btn-green" onClick={()=>setModal({type:'attendance',payload:l})}><IcoPlay size={13}/></button>
+                    ) : (
+                      <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'attendance',payload:l})}><IcoCheck size={13}/></button>
+                    )}
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      );
+    };
+
+    // ── MONTH VIEW ─────────────────────────────────────────────────────────────
+    const MonthView = () => {
+      const y = calMonth.getFullYear(), m = calMonth.getMonth();
+      const daysInMonth = new Date(y, m+1, 0).getDate();
+      let firstDow = new Date(y, m, 1).getDay();
+      firstDow = firstDow === 0 ? 6 : firstDow - 1; // Mon-based
+      const today = getTodayDate();
+      const DAY_LABELS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+      const fmtDs = (d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+      const selDateObj = new Date(selDate+'T00:00:00');
+      const selDayLessons = lessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
+
+      return (
+        <div>
+          {/* Month nav */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+            <button className="btn btn-sm btn-white" onClick={()=>setCalMonth(new Date(y,m-1,1))}><IcoChevL size={16}/></button>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900}}>
+              {MONTH_RU[m]} {y}
+            </div>
+            <button className="btn btn-sm btn-white" onClick={()=>setCalMonth(new Date(y,m+1,1))}><IcoChevR size={16}/></button>
+          </div>
+
+          {/* Day-of-week header */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:4}}>
+            {DAY_LABELS.map(d => (
+              <div key={d} style={{textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,color:'#666',padding:'4px 0'}}>{d}</div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
+            {Array(firstDow).fill(null).map((_,i)=><div key={'e'+i}/>)}
+            {Array.from({length:daysInMonth},(_,i)=>i+1).map(day => {
+              const ds = fmtDs(day);
+              const dayLess = lessons.filter(l=>l.date===ds);
+              const isToday = ds===today;
+              const isSel = ds===selDate;
+              const planned = dayLess.filter(l=>l.status==='planned').length;
+              const done    = dayLess.filter(l=>l.status==='completed').length;
+              return (
+                <div key={day} onClick={()=>setSelDate(ds)}
+                  style={{
+                    border:'2.5px solid #0a0a0a', borderRadius:4, cursor:'pointer',
+                    padding:'6px 4px', minHeight:52, position:'relative',
+                    background: isSel ? '#0a0a0a' : isToday ? '#FFE500' : '#f5f0e8',
+                    color: isSel ? '#FFE500' : '#0a0a0a',
+                    boxShadow: isSel ? 'none' : '3px 3px 0 #0a0a0a',
+                    transition:'transform .1s',
+                  }}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:13,fontWeight:900,lineHeight:1}}>{day}</div>
+                  {/* Lesson dots / counts */}
+                  <div style={{marginTop:4,display:'flex',flexDirection:'column',gap:2}}>
+                    {planned > 0 && (
+                      <div style={{background: isSel?'#FFE500':'#0057FF', color: isSel?'#0a0a0a':'#fff', borderRadius:3, padding:'1px 4px', fontSize:9, fontFamily:'Unbounded,cursive', fontWeight:700}}>
+                        {planned}
+                      </div>
+                    )}
+                    {done > 0 && (
+                      <div style={{background: isSel?'rgba(255,255,255,.3)':'#e0e0e0', color: isSel?'#FFE500':'#666', borderRadius:3, padding:'1px 4px', fontSize:9, fontFamily:'Unbounded,cursive', fontWeight:700}}>
+                        ✓{done}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Selected day panel */}
+          <div style={{marginTop:16,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
+            <div style={{background:'#0a0a0a',color:'#FFE500',padding:'8px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>
+                {selDateObj.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long'}).toUpperCase()}
+              </span>
+              <button className="btn btn-sm" style={{padding:'4px 8px',fontSize:9,background:'#FFE500',color:'#0a0a0a',boxShadow:'2px 2px 0 #FFE500'}}
+                onClick={()=>setModal({type:'lesson',payload:{date:selDate}})}>
+                + УРОК
+              </button>
+            </div>
+            {selDayLessons.length === 0 ? (
+              <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий — нажмите + чтобы добавить</div>
+            ) : selDayLessons.map(l => (
+              <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
+                <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:l.status==='completed'?'#999':'#0a0a0a'}}>{l.time}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:l.status==='completed'?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
+                  <span style={{fontSize:9,background:l.type==='group'?'#0057FF':'#FFE500',color:l.type==='group'?'#fff':'#0a0a0a',padding:'1px 5px',borderRadius:3,fontFamily:'Unbounded,cursive',fontWeight:700}}>
+                    {l.type==='group'?'ГР':'ИНД'}
+                  </span>
+                </div>
+                {l.status==='planned' ? (
+                  <button className="btn btn-sm btn-green" onClick={()=>setModal({type:'attendance',payload:l})}><IcoPlay size={13}/></button>
+                ) : (
+                  <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'attendance',payload:l})}><IcoCheck size={13}/></button>
+                )}
+                <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div>
+        {/* Header + view toggle */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div style={{fontFamily:'Unbounded,cursive',fontSize:20,fontWeight:900}}>Расписание</div>
+          <div className="toggle-row" style={{marginBottom:0,width:'auto'}}>
+            <button className={`toggle-opt ${schedView==='week'?'active':''}`} style={{padding:'6px 14px',fontSize:10}} onClick={()=>setSchedView('week')}>
+              Неделя
+            </button>
+            <button className={`toggle-opt ${schedView==='month'?'active':''}`} style={{padding:'6px 14px',fontSize:10}} onClick={()=>setSchedView('month')}>
+              Месяц
+            </button>
+          </div>
+        </div>
+
+        {schedView==='week' ? <WeekView/> : <MonthView/>}
+      </div>
+    );
+  };
+
+  // STUDENTS PAGE
+  const PageStudents = () => {
+    const [q, setQ] = useState('');
+    const [debtOnly, setDebtOnly] = useState(false);
+    const filtered = students.filter(s => {
+      if (debtOnly && s.balance >= 0) return false;
+      return s.name.toLowerCase().includes(q.toLowerCase());
+    });
+    return (
+      <div>
+        <div className="page-title">
+          Ученики
+          <button className="btn btn-sm btn-black" onClick={()=>setModal({type:'student',payload:null})}>
+            <IcoPlus size={14}/>
+          </button>
+        </div>
+        {/* Search */}
+        <div style={{position:'relative',marginBottom:10}}>
+          <IcoSearch size={16} cls="" style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',opacity:.5}}/>
+          <input className="input" style={{paddingLeft:36}} placeholder="Поиск..." value={q} onChange={e=>setQ(e.target.value)}/>
+        </div>
+        <button
+          className={`btn btn-sm btn-full ${debtOnly?'btn-red':'btn-white'}`}
+          style={{marginBottom:14}}
+          onClick={()=>setDebtOnly(!debtOnly)}>
+          {debtOnly ? '✕ Только должники' : 'Только должники'}
+        </button>
+
+        {filtered.map(s => (
+          <div key={s.id} className="student-item">
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,marginBottom:4}}>{s.name}</div>
+              <div style={{fontSize:11,color:'#666'}}>{s.rate} ₽/урок · {s.phone}</div>
+              <div style={{marginTop:6}}>
+                <span className={`badge ${s.balance<0?'badge-red':s.balance>0?'badge-green':'badge-yellow'}`}>
+                  {s.balance>0?'+':''}{s.balance} ₽
+                </span>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8,marginLeft:8}}>
+              <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>setModal({type:'student',payload:s})}><IcoEdit size={18}/></button>
+              <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>delStudent(s.id)}><IcoTrash size={18}/></button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // FINANCE PAGE (with full analytics, deduplication-safe)
+  const PageFinance = () => {
+    const [finTab, setFinTab] = useState('control'); // 'control' | 'analytics'
+    const [analyticsPeriod, setAnalyticsPeriod] = useState('current_month');
+
+    const debt    = students.filter(s => s.balance < 0).reduce((s, st) => s + Math.abs(st.balance), 0);
+    const prepaid = students.filter(s => s.balance > 0).reduce((s, st) => s + st.balance, 0);
+    const debtors = students.filter(s => s.balance < 0).sort((a, b) => a.balance - b.balance);
+
+    // Safe quick-pay: only pays the exact outstanding debt (not arbitrary amount)
+    const quickPay = (studentId) => {
+      const s = students.find(st => st.id === studentId);
+      if (!s || s.balance >= 0) return;
+      saveTx({studentId, type:'payment', amount: Math.abs(s.balance), date: getTodayDate(), comment:'Быстрая оплата долга'});
+    };
+
+    // ── ANALYTICS ───────────────────────────────────────────────────────────
+    const getPeriodBounds = (p) => {
+      const now = new Date(); const y = now.getFullYear(), m = now.getMonth();
+      if (p === 'current_month') return { start: new Date(y,m,1), end: new Date(y,m+1,0,23,59,59) };
+      if (p === 'last_month')    return { start: new Date(y,m-1,1), end: new Date(y,m,0,23,59,59) };
+      if (p === 'next_month')    return { start: new Date(y,m+1,1), end: new Date(y,m+2,0,23,59,59) };
+      return { start: new Date(2000,0,1), end: new Date(2100,0,1) };
+    };
+    const bounds = getPeriodBounds(analyticsPeriod);
+    const inBounds = (ds) => { const d = new Date(ds+'T00:00:00'); return d >= bounds.start && d <= bounds.end; };
+
+    // All completed lessons
+    const completedLessons = lessons.filter(l => l.status === 'completed');
+    const periodLessons    = lessons.filter(l => inBounds(l.date));
+    const periodCompleted  = periodLessons.filter(l => l.status === 'completed');
+    const periodPlanned    = periodLessons.filter(l => l.status === 'planned');
+
+    // Compute per-student stats across ALL time (for skip rate)
+    const studentStats = useMemo(() => {
+      const stats = {};
+      students.forEach(s => { stats[s.id] = { scheduled: 0, attended: 0, skipped: 0, earned: 0, lost: 0 }; });
+      completedLessons.forEach(lesson => {
+        const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+        const ls = lesson.type === 'individual'
+          ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+          : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+        ls.forEach(s => {
+          if (!stats[s.id]) return;
+          const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+          const present = lesson.attendance?.[s.id] !== false;
+          stats[s.id].scheduled++;
+          if (present) { stats[s.id].attended++; stats[s.id].earned += rate; }
+          else          { stats[s.id].skipped++;  stats[s.id].lost   += rate; }
+        });
+      });
+      return stats;
+    }, [completedLessons, students, groups]);
+
+    // Average skip rate across all students (weighted by scheduled lessons)
+    const totalScheduled = Object.values(studentStats).reduce((s, v) => s + v.scheduled, 0);
+    const totalSkipped   = Object.values(studentStats).reduce((s, v) => s + v.skipped, 0);
+    const avgSkipRate    = totalScheduled > 0 ? totalSkipped / totalScheduled : 0;
+
+    // Period income (actual from txs)
+    const periodTxs        = txs.filter(tx => inBounds(tx.date));
+    const actualPayments   = periodTxs.filter(tx => tx.type === 'payment').reduce((s, t) => s + t.amount, 0);
+    const actualCharges    = periodTxs.filter(tx => tx.type === 'charge').reduce((s, t) => s + t.amount, 0);
+
+    // Period earned from completed lessons (gross)
+    let periodEarned = 0, periodLost = 0;
+    periodCompleted.forEach(lesson => {
+      const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+      const ls = lesson.type === 'individual'
+        ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+        : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+      ls.forEach(s => {
+        const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+        const present = lesson.attendance?.[s.id] !== false;
+        if (present) periodEarned += rate;
+        else         periodLost   += rate;
+      });
+    });
+
+    // Projected income for planned lessons in period
+    let projIdeal = 0, projRealistic = 0;
+    periodPlanned.forEach(lesson => {
+      const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+      const ls = lesson.type === 'individual'
+        ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+        : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+      ls.forEach(s => {
+        const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+        projIdeal     += rate;
+        projRealistic += rate * (1 - avgSkipRate);
+      });
+    });
+
+    const totalIdeal     = periodEarned + projIdeal;
+    const totalRealistic = periodEarned + projRealistic;
+
+    // Per-student table for period
+    const studentPeriodStats = useMemo(() => {
+      const st = {};
+      students.forEach(s => { st[s.id] = { earned:0, lost:0, scheduled:0, attended:0 }; });
+      periodCompleted.forEach(lesson => {
+        const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+        const ls = lesson.type === 'individual'
+          ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+          : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+        ls.forEach(s => {
+          if (!st[s.id]) return;
+          const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+          const present = lesson.attendance?.[s.id] !== false;
+          st[s.id].scheduled++;
+          if (present) { st[s.id].attended++; st[s.id].earned += rate; }
+          else         { st[s.id].lost += rate; }
+        });
+      });
+      return st;
+    }, [periodCompleted, students, groups]);
+
+    const studentRows = students
+      .map(s => ({ ...s, ...studentPeriodStats[s.id] }))
+      .filter(s => s.scheduled > 0)
+      .sort((a, b) => b.earned - a.earned);
+
+    const Stat = ({label, value, color, sub}) => (
+      <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 12px',boxShadow:'3px 3px 0 #0a0a0a',background:color||'#f5f0e8'}}>
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:9,textTransform:'uppercase',letterSpacing:'.05em',color:color?'rgba(255,255,255,.7)':'#666',marginBottom:4}}>{label}</div>
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:18,fontWeight:900,color:color?'#fff':'#0a0a0a',lineHeight:1}}>{value}</div>
+        {sub && <div style={{fontSize:10,color:color?'rgba(255,255,255,.7)':'#666',marginTop:3}}>{sub}</div>}
+      </div>
+    );
+
+    const ControlTab = () => (
+      <div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
+          <Stat label="Долги" value={`${debt.toLocaleString()} ₽`} color="#FF2D2D" sub={`${debtors.length} чел.`}/>
+          <Stat label="Предоплаты" value={`${prepaid.toLocaleString()} ₽`} color="#00C853"/>
+        </div>
+
+        {debtors.length > 0 && (
+          <>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:10}}>ДОЛЖНИКИ</div>
+            {debtors.map(s => (
+              <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'12px',marginBottom:8,border:'2.5px solid #FF2D2D',borderRadius:4,background:'#fff5f5',boxShadow:'3px 3px 0 #FF2D2D'}}>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:16,fontWeight:900,color:'#FF2D2D'}}>{s.balance} ₽</div>
+                </div>
+                <button className="btn btn-sm btn-green" onClick={() => quickPay(s.id)}>Оплатил</button>
+              </div>
+            ))}
+          </>
+        )}
+
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 10px'}}>
+          <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900}}>ИСТОРИЯ</div>
+          <button className="btn btn-sm btn-black" onClick={() => setModal({type:'transaction',payload:null})}><IcoPlus size={13}/> Операция</button>
+        </div>
+        {txs.slice(0,30).map(tx => {
+          const s = students.find(st => st.id === tx.studentId);
+          return (
+            <div key={tx.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1.5px solid #e0e0e0'}}>
+              <div>
+                <div style={{fontWeight:700,fontSize:12}}>{s?.name || 'Удалён'}</div>
+                <div style={{fontSize:10,color:'#888'}}>{fmtDate(tx.date)} · {tx.comment}</div>
+              </div>
+              <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:14,color:tx.type==='payment'?'#00C853':'#FF2D2D'}}>
+                {tx.type==='payment'?'+':'-'}{tx.amount} ₽
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+
+    const AnalyticsTab = () => (
+      <div>
+        {/* Period selector */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:16}}>
+          {[['last_month','Прошлый мес.'],['current_month','Этот месяц'],['next_month','Следующий'],['all_time','Всё время']].map(([v,l]) => (
+            <button key={v} onClick={() => setAnalyticsPeriod(v)}
+              style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'2.5px solid #0a0a0a',borderRadius:4,cursor:'pointer',
+                background: analyticsPeriod===v ? '#0a0a0a' : '#f5f0e8',
+                color: analyticsPeriod===v ? '#FFE500' : '#0a0a0a',
+                boxShadow: analyticsPeriod===v ? 'none' : '3px 3px 0 #0a0a0a'}}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Key metrics */}
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ИТОГ ПЕРИОДА</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
+          <Stat label="Заработано" value={`${periodEarned.toLocaleString()} ₽`} color="#00C853"/>
+          <Stat label="Потеряно на пропусках" value={`${periodLost.toLocaleString()} ₽`} color="#FF2D2D"/>
+        </div>
+
+        {/* Forecasts */}
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10,marginTop:16}}>ПРОГНОЗ (оставшиеся {periodPlanned.length} уроков)</div>
+        <div style={{marginBottom:8,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
+          <div style={{background:'#00C853',padding:'10px 14px'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'rgba(0,0,0,.6)',textTransform:'uppercase'}}>Идеальный (все приходят)</div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:22,fontWeight:900}}>{projIdeal.toLocaleString()} ₽</div>
+            <div style={{fontSize:10,color:'rgba(0,0,0,.6)'}}>Итого за период: {totalIdeal.toLocaleString()} ₽</div>
+          </div>
+          <div style={{background:'#FFE500',padding:'10px 14px',borderTop:'2.5px solid #0a0a0a'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'rgba(0,0,0,.6)',textTransform:'uppercase'}}>Реалистичный (с учётом пропусков {Math.round(avgSkipRate*100)}%)</div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:22,fontWeight:900}}>{Math.round(projRealistic).toLocaleString()} ₽</div>
+            <div style={{fontSize:10,color:'rgba(0,0,0,.6)'}}>Итого за период: {Math.round(totalRealistic).toLocaleString()} ₽</div>
+          </div>
+        </div>
+
+        {/* Skip rate info */}
+        <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 14px',marginBottom:16,background:'#f5f0e8',boxShadow:'3px 3px 0 #0a0a0a'}}>
+          <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:6}}>СТАТИСТИКА ПРОПУСКОВ (все время)</div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div>
+              <div style={{fontSize:11,color:'#666'}}>{totalScheduled} занятий запланировано</div>
+              <div style={{fontSize:11,color:'#666'}}>{totalSkipped} пропущено</div>
+            </div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:28,fontWeight:900,color:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853'}}>
+              {Math.round(avgSkipRate*100)}%
+            </div>
+          </div>
+          {/* Bar */}
+          <div style={{marginTop:10,height:10,background:'#e0e0e0',borderRadius:3,border:'1.5px solid #0a0a0a',overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${Math.min(avgSkipRate*100,100)}%`,background:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853',transition:'width .3s'}}/>
+          </div>
+        </div>
+
+        {/* Per-student breakdown */}
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ПО УЧЕНИКАМ (период)</div>
+        {studentRows.length === 0 ? (
+          <div style={{textAlign:'center',padding:20,color:'#999',fontFamily:'Unbounded,cursive',fontSize:11}}>Нет данных за период</div>
+        ) : studentRows.map(s => {
+          const skipRate = s.scheduled > 0 ? s.skipped / s.scheduled : 0;
+          const ownSkip  = studentStats[s.id];
+          const allTimeSkip = ownSkip.scheduled > 0 ? ownSkip.skipped / ownSkip.scheduled : 0;
+          return (
+            <div key={s.id} style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 12px',marginBottom:8,boxShadow:'3px 3px 0 #0a0a0a',background:'#f5f0e8'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
+                <div style={{display:'flex',gap:6}}>
+                  <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'#00C853'}}>{s.earned.toLocaleString()} ₽</span>
+                  {s.lost > 0 && <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'#FF2D2D'}}>-{s.lost.toLocaleString()} ₽</span>}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:6,fontSize:10,color:'#666',marginBottom:6}}>
+                <span>{s.attended}/{s.scheduled} уроков</span>
+                <span>·</span>
+                <span style={{color:allTimeSkip>0.2?'#FF2D2D':allTimeSkip>0.1?'#FF8C00':'#00C853',fontWeight:700}}>
+                  пропуск {Math.round(allTimeSkip*100)}% (всё время)
+                </span>
+              </div>
+              {/* Earned bar */}
+              <div style={{height:6,background:'#e0e0e0',borderRadius:3,border:'1px solid #ccc',overflow:'hidden'}}>
+                <div style={{height:'100%',display:'flex'}}>
+                  <div style={{width:`${s.scheduled>0?(s.attended/s.scheduled)*100:0}%`,background:'#00C853',transition:'width .3s'}}/>
+                  <div style={{flex:1,background:'#FF2D2D'}}/>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+
+    return (
+      <div>
+        <div className="page-title">Финансы</div>
+        <div className="toggle-row" style={{marginBottom:16}}>
+          <button className={`toggle-opt ${finTab==='control'?'active':''}`} onClick={()=>setFinTab('control')}>Контроль</button>
+          <button className={`toggle-opt ${finTab==='analytics'?'active':''}`} onClick={()=>setFinTab('analytics')}>Аналитика</button>
+        </div>
+        {finTab==='control' ? <ControlTab/> : <AnalyticsTab/>}
+      </div>
+    );
+  };
+
+  if (!loaded) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100dvh',fontFamily:'Unbounded,cursive',fontSize:14}}>Загрузка...</div>;
+
+  return (
+    <div>
+      <div className="main">
+        {tab==='today'    && <PageToday/>}
+        {tab==='schedule' && <PageSchedule/>}
+        {tab==='students' && <PageStudents/>}
+        {tab==='finance'  && <PageFinance/>}
+      </div>
+
+      {/* FAB — visible on today and schedule pages */}
+      {(tab==='today'||tab==='schedule') && (
+        <div className="fab" onClick={()=>setModal({type:'lesson',payload:{date:tab==='schedule'?selDate:getTodayDate()}})}>
+          <IcoPlus size={28}/>
+        </div>
+      )}
+
+      {/* BOTTOM NAV */}
+      <nav className="navbar">
+        {[
+          {id:'today',    icon:<IcoHome/>,    label:'Сегодня'},
+          {id:'schedule', icon:<IcoCal/>,     label:'Расписание'},
+          {id:'students', icon:<IcoUsers/>,   label:'Ученики'},
+          {id:'finance',  icon:<IcoWallet/>,  label:'Финансы'},
+        ].map(({id,icon,label}) => (
+          <button key={id} className={`nav-btn ${tab===id?'active':''}`} onClick={()=>setTab(id)}>
+            {icon}<span>{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* MODALS */}
+      {modal?.type==='lesson' && (
+        <LessonModal
+          students={students} groups={groups}
+          initialDate={modal.payload?.date || getTodayDate()}
+          lessonToEdit={modal.payload?.lesson || null}
+          onClose={()=>setModal(null)}
+          onSave={(data)=>saveLesson(data, modal.payload?.lesson?.id||null)}
+        />
+      )}
+      {modal?.type==='attendance' && (
+        <AttendanceModal lesson={modal.payload} students={students} groups={groups}
+          onClose={()=>setModal(null)} onSave={saveAttendance}/>
+      )}
+      {modal?.type==='student' && (
+        <StudentModal student={modal.payload} onClose={()=>setModal(null)} onSave={saveStudent}/>
+      )}
+      {modal?.type==='transaction' && (
+        <TransactionModal students={students} onClose={()=>setModal(null)} onSave={saveTx}/>
+      )}
+      {modal?.type==='group' && (
+        <GroupModal students={students} onClose={()=>setModal(null)} onSave={saveGroup}/>
+      )}
+    </div>
+  );
+}
+
+// Shared LessonCard component
+function LessonCard({ lesson, name, onEdit, onAttend, onDelete, compact=false }) {
+  const done = lesson.status==='completed';
+  return (
+    <div className="lesson-card" style={{opacity:done?.75:1}}>
+      <div className="lesson-time" style={{background:done?'#333':'#0a0a0a',minWidth:compact?52:62,fontSize:compact?12:14}}>
+        {lesson.time.split(':').join('\n').split('').join('')}
+        <span>{lesson.time}</span>
+        {done && <span style={{fontSize:8,color:'#888',marginTop:2}}>DONE</span>}
+      </div>
+      <div className="lesson-body">
+        <div className="lesson-name" style={{fontSize:compact?11:12}}>{name}</div>
+        <div>
+          <span className="lesson-tag" style={{background:lesson.type==='group'?'#0057FF':'#FFE500',color:lesson.type==='group'?'#fff':'#0a0a0a'}}>
+            {lesson.type==='group'?'Группа':'Инд.'}
+          </span>
+        </div>
+      </div>
+      <div className="lesson-actions">
+        {!done ? (
+          <button className="btn btn-sm btn-green" onClick={e=>{e.stopPropagation();onAttend();}}>
+            <IcoPlay size={14}/>
+          </button>
+        ) : (
+          <button className="btn btn-sm btn-white" onClick={e=>{e.stopPropagation();onAttend();}}>
+            <IcoCheck size={14}/>
+          </button>
+        )}
+        <button style={{background:'none',border:'none',cursor:'pointer',padding:6,color:'#999'}} onClick={onDelete}>
+          <IcoTrash size={16}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
 </html>

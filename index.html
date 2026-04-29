@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 :root {
+  color-scheme: light;
   --black: #0a0a0a;
   --white: #f5f0e8;
   --yellow: #FFE500;
@@ -21,6 +22,7 @@
   --shadow-lg: 6px 6px 0px var(--black);
 }
 body[data-theme="dark"] {
+  color-scheme: dark;
   --black: #eee6d8;
   --white: #171716;
   --yellow: #ffe66b;
@@ -324,6 +326,7 @@ body[data-theme="dark"] .badge-yellow {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
+@keyframes slideDown { from { transform:translateX(-50%) translateY(-80px); opacity:0; } to { transform:translateX(-50%) translateY(0); opacity:1; } }
 </style>
 </head>
 <body>
@@ -451,14 +454,7 @@ const FINAL_STATUSES = ['completed','cancelled_by_student','cancelled_by_tutor',
 const isFinalLesson = (lesson) => FINAL_STATUSES.includes(lesson?.status);
 const money = (n) => `${Number(n || 0).toLocaleString('ru-RU')} ₽`;
 const cloneDemoState = () => ({
-  students: [],
-  groups: [],
-  lessons: [],
-  txs: [],
-  settings: { theme:'light' },
-});
-const cloneDemoDataState = () => ({
-  students: mockStudents.map(s => ({...s, subjects:['История','Общество'], archived:false, packageLessons:0, goal:'', notes:''})),
+  students: mockStudents.map(s => ({...s, subjects:['История','Общество'], archived:false, packageLessons:0, goal:'', notes:'', lessonRates:{}, tgId:''})),
   groups: mockGroups.map(g => ({...g, subject:g.subject || 'История', studentIds:[...g.studentIds], rateOverrides:{...(g.rateOverrides||{})}, archived:false})),
   lessons: mockLessons.map(l => ({...l, subject:l.subject || 'История', topic:'', homework:'', lessonNote:'', packageUse:{}})),
   txs: [],
@@ -484,7 +480,7 @@ const loadSavedState = () => {
       const groupSubjects = groups.filter(g => g.studentIds?.includes(s.id)).map(g => g.subject);
       const storedSubjects = s.subjects || (s.subject ? [s.subject] : []);
       const subjects = [...new Set([...storedSubjects, ...groupSubjects])];
-      return {archived:false, packageLessons:0, goal:'', notes:'', ...s, subjects:subjects.length ? subjects : ['История']};
+      return {archived:false, packageLessons:0, goal:'', notes:'', lessonRates:{}, tgId:'', ...s, subjects:subjects.length ? subjects : ['История']};
     });
     return {
       students,
@@ -516,7 +512,12 @@ const getLessonStudents = (lesson, students, groups, opts={}) => {
 };
 const getLessonRate = (lesson, student, groups) => {
   const group = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
-  return group?.rateOverrides?.[student.id] ?? student.rate;
+  const groupOverride = group?.rateOverrides?.[student.id];
+  if (groupOverride !== undefined) return groupOverride;
+  // Subject-specific rate on student
+  const subjectRate = student.lessonRates?.[lesson.subject];
+  if (subjectRate !== undefined) return subjectRate;
+  return student.rate;
 };
 const getStudentLastHomework = (studentId, lessons, groups) => lessons
   .filter(l => l.homework && (l.type === 'individual'
@@ -553,6 +554,31 @@ const IcoStar    = (p) => <Ico {...p}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3
 const IcoLoader  = (p) => <Ico {...p}><path d="M21 12a9 9 0 1 1-6.2-8.6" cls="spin"/></Ico>;
 const IcoSearch  = (p) => <Ico {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Ico>;
 const IcoBook    = (p) => <Ico {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Ico>;
+const IcoTg      = ({size=22}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21.8 2.4a1.5 1.5 0 0 0-1.7-.3L2.6 9.4a1.5 1.5 0 0 0 .1 2.8l4.2 1.3 1.6 5a1.5 1.5 0 0 0 2.4.6l2.3-2.1 4.3 3.2a1.5 1.5 0 0 0 2.3-1l2.5-15a1.5 1.5 0 0 0-.5-1.8z" fill="currentColor"/></svg>;
+
+// ── UNDO TOAST ──────────────────────────────────────────────────────────────────
+function UndoToast({ pendingUndo, onUndo }) {
+  if (!pendingUndo) return null;
+  return (
+    <div style={{
+      position:'fixed', top:16, left:'50%', transform:'translateX(-50%)',
+      zIndex:9999, background:'var(--black)', color:'var(--white)',
+      border:'2.5px solid var(--black)', borderRadius:4,
+      boxShadow:'4px 4px 0 rgba(0,0,0,.4)',
+      display:'flex', alignItems:'center', gap:12, padding:'10px 14px',
+      fontFamily:'Martian Mono,monospace', fontSize:12,
+      maxWidth:340, width:'calc(100% - 32px)',
+      animation:'slideDown .2s ease',
+    }}>
+      <span style={{flex:1}}>{pendingUndo.label}</span>
+      <button onClick={onUndo} style={{
+        background:'var(--yellow)', color:'var(--black)', border:'none', borderRadius:3,
+        padding:'6px 12px', fontFamily:'Unbounded,cursive', fontSize:10,
+        fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0,
+      }}>Отменить</button>
+    </div>
+  );
+}
 
 // ── MODALS ─────────────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {
@@ -581,12 +607,14 @@ function StudentModal({ student, onClose, onSave }) {
   const [name, setName]   = useState(student?.name || '');
   const [rate, setRate]   = useState(student?.rate || 1500);
   const [phone, setPhone] = useState(student?.phone || '');
+  const [tgId, setTgId]   = useState(student?.tgId || '');
   const [subjects, setSubjects] = useState(student?.subjects || ['История']);
   const [goal, setGoal]   = useState(student?.goal || '');
   const [notes, setNotes] = useState(student?.notes || '');
   const [archived, setArchived] = useState(!!student?.archived);
+  const [lessonRates, setLessonRates] = useState(student?.lessonRates || {});
   const toggleSubject = (subject) => setSubjects(p => p.includes(subject) ? p.filter(x=>x!==subject) : [...p,subject]);
-  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; onSave({name,rate:Number(rate),phone,subjects:subjects.length?subjects:['История'],goal,notes,archived}); };
+  const submit = (e) => { e.preventDefault(); if (!name.trim()) return; const lr={}; Object.entries(lessonRates).forEach(([k,v])=>{if(String(v).trim()!=='')lr[k]=Number(v);}); onSave({name,rate:Number(rate),phone,tgId,subjects:subjects.length?subjects:['История'],goal,notes,archived,lessonRates:lr}); };
   return (
     <Modal title={student ? 'Редактировать' : 'Новый ученик'} onClose={onClose}>
       <form onSubmit={submit}>
@@ -600,8 +628,25 @@ function StudentModal({ student, onClose, onSave }) {
             ))}
           </div>
         </FormField>
-        <FormField label="Ставка ₽/урок"><input className="input" type="number" required value={rate} onChange={e=>setRate(e.target.value)}/></FormField>
+        <FormField label="Базовая ставка ₽/урок"><input className="input" type="number" required value={rate} onChange={e=>setRate(e.target.value)}/></FormField>
+        {subjects.length > 1 && (
+          <FormField label="Ставки по предметам (необязательно)">
+            {subjects.map(subject=>(
+              <div key={subject} style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                <span style={{fontSize:11,minWidth:88,fontFamily:'Unbounded,cursive',fontWeight:700}}>{subject}</span>
+                <input className="input" type="number" min="0" placeholder={`${rate} ₽`}
+                  value={lessonRates[subject] ?? ''}
+                  onChange={e=>setLessonRates(p=>({...p,[subject]:e.target.value}))}
+                  style={{padding:'6px 8px',fontSize:12}}
+                />
+              </div>
+            ))}
+          </FormField>
+        )}
         <FormField label="Телефон"><input className="input" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+7 ..."/></FormField>
+        <FormField label="Telegram (username или ID)">
+          <input className="input" value={tgId} onChange={e=>setTgId(e.target.value)} placeholder="@username или 123456789"/>
+        </FormField>
         <FormField label="Цель"><input className="input" value={goal} onChange={e=>setGoal(e.target.value)} placeholder="ЕГЭ история, ОГЭ, школьная программа"/></FormField>
         <FormField label="Заметки"><textarea className="input" value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Слабые темы, родитель, особенности" style={{minHeight:74,resize:'vertical'}}/></FormField>
         {student && (
@@ -621,6 +666,7 @@ function StudentModal({ student, onClose, onSave }) {
 
 function GroupModal({ group, students, onClose, onSave }) {
   const [name, setName] = useState(group?.name || '');
+  const [emoji, setEmoji] = useState(group?.emoji || '');
   const [subject, setSubject] = useState(group?.subject || 'История');
   const [sel, setSel]   = useState(group?.studentIds || []);
   const [archived, setArchived] = useState(!!group?.archived);
@@ -634,12 +680,15 @@ function GroupModal({ group, students, onClose, onSave }) {
     Object.entries(rateOverrides).forEach(([id, val]) => {
       if (String(val).trim() !== '') cleanRates[id] = Number(val);
     });
-    onSave({name, subject, studentIds: sel, rateOverrides: cleanRates, archived});
+    onSave({name, emoji, subject, studentIds: sel, rateOverrides: cleanRates, archived});
   };
   return (
     <Modal title={group ? 'Редактировать группу' : 'Новая группа'} onClose={onClose}>
       <form onSubmit={submit}>
-        <FormField label="Название"><input className="input" required value={name} onChange={e=>setName(e.target.value)}/></FormField>
+        <div style={{display:'grid',gridTemplateColumns:'72px 1fr',gap:10,marginBottom:14}}>
+          <div><label className="label">Смайл</label><input className="input" value={emoji} onChange={e=>setEmoji(e.target.value)} placeholder="🏛️" style={{textAlign:'center',fontSize:22,padding:'6px'}}/></div>
+          <FormField label="Название"><input className="input" required value={name} onChange={e=>setName(e.target.value)}/></FormField>
+        </div>
         <FormField label="Предмет">
           <select className="input" value={subject} onChange={e=>setSubject(e.target.value)}>
             {SUBJECTS.map(s=><option key={s} value={s}>{s}</option>)}
@@ -906,7 +955,7 @@ function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
   );
 }
 
-function LessonStatusModal({ lesson, onClose, onStatus, onDelete, onDeleteSeries, onDeleteGroupLessons, onReschedule, onMessage, onAttend }) {
+function LessonStatusModal({ lesson, onClose, onStatus, onDelete, onReschedule, onMessage }) {
   const actions = [
     ['planned','Вернуть в план','btn-blue'],
     ['cancelled_by_student','Отменил ученик','btn-white'],
@@ -920,27 +969,13 @@ function LessonStatusModal({ lesson, onClose, onStatus, onDelete, onDeleteSeries
         {fmtDate(lesson.date)} в {lesson.time}
       </div>
       <div style={{display:'grid',gap:8}}>
-        <button className="btn btn-full btn-green" onClick={onAttend}>
-          {lesson.status==='completed' ? '✓ Посещаемость / изменить' : '▶ Провести урок'}
-        </button>
         <button className="btn btn-full btn-blue" onClick={()=>onReschedule(lesson)}>Перенести с созданием нового</button>
-        <button className="btn btn-full btn-white" onClick={()=>onMessage(lesson)}>Сообщение по уроку</button>
         {actions.map(([status,label,cls]) => (
           <button key={status} className={`btn btn-full ${cls}`} onClick={()=>onStatus(lesson.id,status)}>
             {lesson.status===status ? '✓ ' : ''}{label}
           </button>
         ))}
-        <button className="btn btn-full btn-black" onClick={(e)=>onDelete(lesson.id,e)}>Удалить это занятие</button>
-        {lesson.seriesId && (
-          <button className="btn btn-full btn-red" onClick={(e)=>onDeleteSeries(lesson.seriesId, e)}>
-            🗑 Удалить всю серию
-          </button>
-        )}
-        {lesson.type==='group' && (
-          <button className="btn btn-full btn-red" onClick={()=>onDeleteGroupLessons(lesson.targetId)}>
-            🗑 Удалить все занятия группы
-          </button>
-        )}
+        <button className="btn btn-full btn-black" onClick={(e)=>onDelete(lesson.id,e)}>Удалить занятие</button>
       </div>
     </Modal>
   );
@@ -975,6 +1010,11 @@ function StudentDetailModal({ student, lessons, txs, groups, students, onClose, 
         <button className="btn btn-black btn-full" onClick={()=>onLesson(student.id)}>Урок</button>
         <button className="btn btn-blue btn-full" onClick={()=>onPackage(student)}>Абонемент</button>
         <button className="btn btn-white btn-full" onClick={()=>onMessage(student)}>Сообщение</button>
+        {student.tgId && (
+          <button className="btn btn-blue btn-full" onClick={()=>{const id=String(student.tgId).trim();window.open(id.startsWith('@')?`https://t.me/${id.slice(1)}`:`https://t.me/${id}`,'_blank');}}>
+            <IcoTg size={14}/> Telegram
+          </button>
+        )}
         <button className="btn btn-white btn-full" onClick={onEdit}>Править</button>
         <button className={`btn btn-full ${student.archived?'btn-green':'btn-white'}`} onClick={()=>onArchive(student.id, !student.archived)}>
           {student.archived ? 'Вернуть' : 'В архив'}
@@ -1127,6 +1167,47 @@ function MessageModal({ student, lesson, groups, lessons, onClose }) {
   );
 }
 
+// ── GROUP DETAIL MODAL ──────────────────────────────────────────────────────────
+function GroupDetailModal({ group, students, lessons, onClose, onEdit }) {
+  const members = group.studentIds.map(id => students.find(s=>s.id===id)).filter(Boolean);
+  const groupLessons = lessons.filter(l => l.type==='group' && l.targetId===group.id);
+  const upcoming = groupLessons.filter(l=>l.status==='planned').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,5);
+  const completedCount = groupLessons.filter(l=>l.status==='completed').length;
+  return (
+    <Modal title={`${group.emoji ? group.emoji+' ' : ''}${group.name}`} onClose={onClose}>
+      <div style={{marginBottom:12,display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+        <span className="lesson-tag" style={{background:subjectColor(group.subject||'История'),color:(group.subject==='Общество'||group.subject==='Математика')?'#0a0a0a':'#fff'}}>
+          {group.subject||'История'}
+        </span>
+        <span style={{fontSize:11,color:'#666'}}>{completedCount} проведено · {upcoming.length} запланировано</span>
+        {group.archived && <span className="badge badge-yellow">АРХИВ</span>}
+      </div>
+      <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:8}}>УЧЕНИКИ ({members.length})</div>
+      {members.map(s=>(
+        <div key={s.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid #ddd',fontSize:12}}>
+          <span style={{fontWeight:700}}>{s.name}</span>
+          <span style={{color:'#666',fontFamily:'Unbounded,cursive',fontSize:10}}>
+            {group.rateOverrides?.[s.id] !== undefined ? <><s style={{opacity:.5}}>{money(s.rate)}</s> {money(group.rateOverrides[s.id])}</> : money(s.rate)}/урок
+          </span>
+        </div>
+      ))}
+      <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,margin:'14px 0 8px'}}>БЛИЖАЙШИЕ УРОКИ</div>
+      {upcoming.length===0
+        ? <div style={{fontSize:11,color:'#888'}}>Нет запланированных уроков</div>
+        : upcoming.map(l=>(
+          <div key={l.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #ddd',fontSize:11}}>
+            <span>{fmtDate(l.date)}</span><span style={{fontWeight:700}}>{l.time}</span>
+          </div>
+        ))
+      }
+      <div style={{display:'flex',gap:10,marginTop:16}}>
+        <button className="btn btn-white btn-full" onClick={onClose}>Закрыть</button>
+        <button className="btn btn-black btn-full" onClick={onEdit}>Редактировать</button>
+      </div>
+    </Modal>
+  );
+}
+
 // ── MAIN APP ───────────────────────────────────────────────────────────────────
 function App() {
   const [tab, setTab]           = useState('today');
@@ -1143,9 +1224,39 @@ function App() {
   // modals
   const [modal, setModal]       = useState(null); // { type, payload }
 
+  // ── Hoisted page state (survives modal open/close) ──
+  const [studentsView, setStudentsView] = useState('students');
+  const [studentsQ, setStudentsQ] = useState('');
+  const [studentsDebtOnly, setStudentsDebtOnly] = useState(false);
+  const [studentsShowArchived, setStudentsShowArchived] = useState(false);
+  const [studentsSubjectFilter, setStudentsSubjectFilter] = useState('all');
+  const [schedView, setSchedView] = useState('week');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [calMonth, setCalMonth] = useState(new Date());
+  const [schedSubject, setSchedSubject] = useState('all');
+
+  // ── Undo system ──
+  const [pendingUndo, setPendingUndo] = useState(null);
+  const undoTimerRef = useRef(null);
+
+  const triggerUndo = (label, snapL, snapS, snapT, snapG) => {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setPendingUndo({ label, restore: () => {
+      setLessons(snapL); setStudents(snapS); setTxs(snapT);
+      if (snapG !== undefined) setGroups(snapG);
+    }});
+    undoTimerRef.current = setTimeout(() => setPendingUndo(null), 4000);
+  };
+  const handleUndo = () => {
+    if (!pendingUndo) return;
+    clearTimeout(undoTimerRef.current);
+    pendingUndo.restore();
+    setPendingUndo(null);
+  };
+
   useEffect(() => {
     const saved = loadSavedState();
-    const initial = saved || cloneDemoState(); // cloneDemoState() now returns empty state
+    const initial = saved || cloneDemoState();
     const r = runAutoCompletion(initial.lessons, initial.students, initial.groups, initial.txs || []);
     setLessons(r?.newLessons || initial.lessons);
     setStudents(r?.newStudents || initial.students);
@@ -1180,9 +1291,11 @@ function App() {
     if (archived) setGroups(p => p.map(g=>({...g,studentIds:g.studentIds.filter(x=>x!==id)})));
   };
   const delStudent = (id) => {
-    if (!confirm('Удалить ученика? Лучше использовать архив, чтобы сохранить историю.')) return;
+    const snapL=[...lessons],snapS=[...students],snapT=[...txs],snapG=[...groups];
+    const student = students.find(s=>s.id===id);
     setStudents(p => p.filter(s=>s.id!==id));
     setGroups(p => p.map(g=>({...g,studentIds:g.studentIds.filter(x=>x!==id)})));
+    triggerUndo(`${student?.name||'Ученик'} удалён`, snapL, snapS, snapT, snapG);
   };
   const saveGroup = (data) => {
     const edit = modal?.payload;
@@ -1191,22 +1304,11 @@ function App() {
     setModal(null);
   };
   const delGroup  = (id) => {
-    if(confirm('Удалить группу? Будущие уроки этой группы останутся в расписании.')) {
-      setGroups(p=>p.filter(g=>g.id!==id));
-    }
-  };
-
-  const delGroupLessons = (groupId) => {
-    const group = groups.find(g => g.id === groupId);
-    if (!group) return;
-    const groupLessons = lessons.filter(l => l.type === 'group' && l.targetId === groupId);
-    const planned = groupLessons.filter(l => l.status === 'planned');
-    const all = groupLessons.length;
-    if (all === 0) { alert('У этой группы нет занятий в расписании.'); return; }
-    const msg = `Удалить занятия группы «${group.name}»?\n\nЗапланированных: ${planned.length}\nВсего в расписании: ${all}\n\nПрошедшие уроки с финансовыми операциями не будут затронуты — удалятся только запланированные.`;
-    if (!confirm(msg)) return;
-    const toDelete = planned.map(l => l.id);
-    setLessons(p => p.filter(l => !toDelete.includes(l.id)));
+    const snapG=[...groups];
+    setGroups(p=>p.filter(g=>g.id!==id));
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setPendingUndo({label:'Группа удалена', restore:()=>setGroups(snapG)});
+    undoTimerRef.current = setTimeout(()=>setPendingUndo(null),4000);
   };
 
   const saveTx = (data) => {
@@ -1225,9 +1327,10 @@ function App() {
   };
 
   const delTx = (tx) => {
-    if (!confirm('Удалить операцию и пересчитать баланс?')) return;
+    const snapS=[...students],snapT=[...txs];
     setTxs(p=>p.filter(t=>t.id!==tx.id));
     applyBalanceDelta(tx.studentId, -txDelta(tx));
+    triggerUndo('Операция удалена', lessons, snapS, snapT);
   };
 
   const saveLesson = (data, editId=null, options={}) => {
@@ -1278,48 +1381,28 @@ function App() {
 
   const delLesson = (id, e) => {
     if(e) e.stopPropagation();
-    if(!confirm('Удалить занятие?')) return;
+    const snapL = [...lessons], snapS = [...students], snapT = [...txs];
     const lesson = lessons.find(l=>l.id===id);
     if (lesson?.status==='no_show') {
       removeNoShowCharges(id);
     } else if (lesson?.status==='completed') {
       const grp = lesson.type==='group' ? groups.find(g=>g.id===lesson.targetId) : null;
       const refunds=[]; const upd={};
-      const pkgRefunds = {};
       Object.entries(lesson.attendance||{}).forEach(([sid,pres])=>{
         if(!pres) return;
         const s = students.find(st=>st.id===Number(sid));
         if(!s) return;
-        if (lesson.packageUse?.[s.id]) {
-          pkgRefunds[s.id] = (pkgRefunds[s.id]||0) + 1;
-          return;
-        }
+        if (lesson.packageUse?.[s.id]) return;
         const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
         refunds.push({id:Date.now()+Math.random(),studentId:s.id,type:'payment',amount:rate,date:getTodayDate(),comment:`Отмена: ${fmtDate(lesson.date)}`});
         upd[s.id] = (upd[s.id]||0) + rate;
       });
-      if (refunds.length) {
-        setTxs(p=>[...refunds,...p]);
-      }
-      setStudents(p=>p.map(s=>upd[s.id]!==undefined || pkgRefunds[s.id]
-        ? {...s,balance:s.balance+(upd[s.id]||0),packageLessons:(s.packageLessons||0)+(pkgRefunds[s.id]||0)}
-        : s));
+      if (refunds.length) setTxs(p=>[...refunds,...p]);
+      setStudents(p=>p.map(s=>upd[s.id]!==undefined?{...s,balance:s.balance+upd[s.id]}:s));
     }
     setLessons(p=>p.filter(l=>l.id!==id));
     setModal(null);
-  };
-
-  const delSeries = (seriesId, e) => {
-    if(e) e.stopPropagation();
-    const seriesLessons = lessons.filter(l => l.seriesId === seriesId);
-    if (!seriesLessons.length) return;
-    const future = seriesLessons.filter(l => l.status === 'planned').length;
-    const total = seriesLessons.length;
-    if (!confirm(`Удалить всю серию? Запланированных: ${future}, всего в серии: ${total}.\nПрошедшие уроки с финансовыми операциями не будут отменены.`)) return;
-    // Only delete planned lessons (don't touch completed/cancelled ones)
-    const toDelete = seriesLessons.filter(l => l.status === 'planned').map(l => l.id);
-    setLessons(p => p.filter(l => !toDelete.includes(l.id)));
-    setModal(null);
+    triggerUndo('Занятие удалено', snapL, snapS, snapT);
   };
 
   const chargeNoShow = (lesson) => {
@@ -1469,22 +1552,13 @@ function App() {
   };
 
   const resetDemoData = () => {
-    if (!confirm('Загрузить демо-данные? Текущие данные сотрутся.')) return;
-    const demo = cloneDemoDataState();
+    if (!confirm('Сбросить все данные к демо-набору? Текущие изменения сотрутся.')) return;
+    const demo = cloneDemoState();
     localStorage.removeItem(STORAGE_KEY);
     setStudents(demo.students);
     setGroups(demo.groups);
     setLessons(demo.lessons);
     setTxs(demo.txs);
-  };
-
-  const clearAllData = () => {
-    if (!confirm('Очистить все данные? Ученики, группы, уроки и операции будут удалены. Это действие нельзя отменить.')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    setStudents([]);
-    setGroups([]);
-    setLessons([]);
-    setTxs([]);
   };
 
   const exportCsv = () => {
@@ -1659,15 +1733,10 @@ function App() {
 
   // SCHEDULE PAGE
   const PageSchedule = () => {
-    const [schedView, setSchedView] = useState('week'); // 'week' | 'month'
-    const [weekOffset, setWeekOffset] = useState(0);
-    const [calMonth, setCalMonth] = useState(new Date());
-    const [schedSubject, setSchedSubject] = useState('all');
     const scheduleLessons = schedSubject === 'all'
       ? lessons
       : lessons.filter(l => getLessonSubject(l, groups) === schedSubject);
 
-    // ── WEEK VIEW ──────────────────────────────────────────────────────────────
     const WeekView = () => {
       // Mon–Sun of selected week
       const getWeekDates = (offset) => {
@@ -1707,9 +1776,6 @@ function App() {
           </div>
 
           {/* Grid */}
-          <div style={{fontSize:10,color:'#999',textAlign:'center',marginBottom:4}}>
-            Нажми — посещаемость · Удержи — статус и удаление
-          </div>
           <div style={{overflowX:'auto',marginLeft:-16,marginRight:-16,paddingLeft:16,paddingRight:16}}>
             <div style={{overflowX:'auto', marginLeft:-16, marginRight:-16}}>
               <table style={{borderCollapse:'separate', borderSpacing:4, minWidth:360, width:'100%', tableLayout:'fixed', paddingLeft:16, paddingRight:16, boxSizing:'border-box'}}>
@@ -1773,50 +1839,25 @@ function App() {
                               {cell.map(l => {
                                 const name = getLessonName(l);
                                 const shortName = name.split('(')[0].trim()
-                                  .replace('История','Ист.')
-                                  .replace('Общество','Общ.')
-                                  .replace('Русский','Рус.')
-                                  .replace('Математика','Мат.')
-                                  .replace('Английский','Анг.');
+                                  .replace('История','Ист.').replace('Общество','Общ.');
                                 const done = isFinalLesson(l);
                                 const statusInfo = LESSON_STATUS[l.status] || LESSON_STATUS.planned;
-                                let pressTimer = null;
-                                const handlePressStart = (e) => {
-                                  pressTimer = setTimeout(() => {
-                                    pressTimer = null;
-                                    setModal({type:'lessonStatus', payload:l});
-                                  }, 500);
-                                };
-                                const handlePressEnd = (e) => {
-                                  if (pressTimer) {
-                                    clearTimeout(pressTimer);
-                                    pressTimer = null;
-                                    setModal({type: (l.status==='planned'||l.status==='completed') ? 'attendance' : 'lessonStatus', payload:l});
-                                  }
-                                };
-                                const handlePressCancel = () => { clearTimeout(pressTimer); pressTimer = null; };
                                 return (
                                   <div key={l.id}
-                                    onMouseDown={handlePressStart}
-                                    onMouseUp={handlePressEnd}
-                                    onMouseLeave={handlePressCancel}
-                                    onTouchStart={handlePressStart}
-                                    onTouchEnd={handlePressEnd}
-                                    onTouchCancel={handlePressCancel}
+                                    onClick={() => setModal({type:l.status==='planned'||l.status==='completed'?'attendance':'lessonStatus', payload:l})}
                                     style={{
                                       background: done ? '#ddd' : l.type==='group' ? '#0057FF' : '#FFE500',
                                       color: done ? '#555' : l.type==='group' ? '#fff' : '#0a0a0a',
                                       border:'2px solid #0a0a0a', borderRadius:4,
-                                      padding:'4px 3px', fontSize:8,
+                                      padding:'5px 5px', fontSize:9,
                                       fontFamily:'Unbounded,cursive', fontWeight:700,
-                                      lineHeight:1.2, cursor:'pointer',
+                                      lineHeight:1.3, cursor:'pointer',
                                       boxShadow: done ? 'none' : '2px 2px 0 #0a0a0a',
-                                      minHeight:48, display:'flex', flexDirection:'column',
+                                      minHeight:52, display:'flex', flexDirection:'column',
                                       justifyContent:'space-between', marginBottom:2,
-                                      wordBreak:'break-all', userSelect:'none',
                                     }}>
                                     <div style={{wordBreak:'break-word'}}>{shortName}</div>
-                                    <div style={{fontSize:7, opacity:.8}}>{statusInfo.short}</div>
+                                    <div style={{fontSize:8, opacity:.8}}>{statusInfo.short}</div>
                                   </div>
                                 );
                               })}
@@ -2017,11 +2058,11 @@ function App() {
 
   // STUDENTS PAGE
   const PageStudents = () => {
-    const [view, setView] = useState('students');
-    const [q, setQ] = useState('');
-    const [debtOnly, setDebtOnly] = useState(false);
-    const [showArchived, setShowArchived] = useState(false);
-    const [subjectFilter, setSubjectFilter] = useState('all');
+    const view = studentsView; const setView = setStudentsView;
+    const q = studentsQ; const setQ = setStudentsQ;
+    const debtOnly = studentsDebtOnly; const setDebtOnly = setStudentsDebtOnly;
+    const showArchived = studentsShowArchived; const setShowArchived = setStudentsShowArchived;
+    const subjectFilter = studentsSubjectFilter; const setSubjectFilter = setStudentsSubjectFilter;
     const filtered = students.filter(s => {
       if (!showArchived && s.archived) return false;
       if (debtOnly && s.balance >= 0) return false;
@@ -2095,9 +2136,11 @@ function App() {
                     {s.archived && <span className="badge badge-yellow" style={{marginLeft:6}}>АРХИВ</span>}
                   </div>
                 </div>
-                <div style={{display:'flex',gap:8,marginLeft:8}}>
+                <div style={{display:'flex',gap:6,marginLeft:8,alignItems:'center'}}>
                   <button title="Карточка" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'studentDetail',payload:s});}}><IcoBook size={18}/></button>
-                  <button title="Сообщение" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'message',payload:{student:s}});}}><IcoPhone size={18}/></button>
+                  <button title={s.tgId ? 'Открыть в Telegram' : 'Написать'} className={`btn btn-sm ${s.tgId ? 'btn-blue' : 'btn-white'}`} style={{padding:'4px 8px',fontSize:9,gap:4}} onClick={(e)=>{e.stopPropagation(); if(s.tgId){const id=String(s.tgId).trim();window.open(id.startsWith('@')?`https://t.me/${id.slice(1)}`:`https://t.me/${id}`,'_blank');}else{setModal({type:'message',payload:{student:s}});}}}>
+                    {s.tgId ? <IcoTg size={12}/> : null}Написать
+                  </button>
                   <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'student',payload:s});}}><IcoEdit size={18}/></button>
                   <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();delStudent(s.id);}}><IcoTrash size={18}/></button>
                 </div>
@@ -2110,25 +2153,21 @@ function App() {
               const memberNames = g.studentIds.map(id=>students.find(s=>s.id===id)?.name).filter(Boolean);
               const futureCount = lessons.filter(l=>l.type==='group' && l.targetId===g.id && l.status==='planned').length;
               return (
-                <div key={g.id} className="student-item" style={{opacity:g.archived ? .6 : 1}}>
+                <div key={g.id} className="student-item" style={{opacity:g.archived ? .6 : 1, cursor:'pointer'}} onClick={()=>setModal({type:'groupDetail',payload:g})}>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,marginBottom:4}}>
+                      {g.emoji && <span style={{marginRight:6,fontSize:16}}>{g.emoji}</span>}
                       {g.name} {g.archived && <span className="badge badge-yellow">АРХИВ</span>}
                     </div>
                     <span className="lesson-tag" style={{background:subjectColor(g.subject),color:g.subject==='Общество'||g.subject==='Математика'?'#0a0a0a':'#fff'}}>
                       {g.subject || 'История'}
                     </span>
                     <div style={{fontSize:11,color:'#666',lineHeight:1.5}}>{memberNames.join(', ') || 'Нет учеников'}</div>
-                    <div style={{fontSize:10,color:'#666',marginTop:4}}>
-                      Запланировано: <strong>{futureCount}</strong>
-                      {lessons.filter(l=>l.type==='group'&&l.targetId===g.id&&isFinalLesson(l)).length > 0 && (
-                        <span> · Проведено: <strong>{lessons.filter(l=>l.type==='group'&&l.targetId===g.id&&isFinalLesson(l)).length}</strong></span>
-                      )}
-                    </div>
+                    <div style={{fontSize:10,color:'#666',marginTop:4}}>Будущих уроков: {futureCount}</div>
                   </div>
                   <div style={{display:'flex',gap:8,marginLeft:8}}>
-                    <button title="Удалить все занятия группы" style={{background:'none',border:'none',cursor:'pointer',padding:6,color:'#FF2D2D'}} onClick={()=>delGroupLessons(g.id)}><IcoTrash size={18}/></button>
-                    <button title="Редактировать группу" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={()=>setModal({type:'group',payload:g})}><IcoEdit size={18}/></button>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'group',payload:g});}}><IcoEdit size={18}/></button>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();delGroup(g.id);}}><IcoTrash size={18}/></button>
                   </div>
                 </div>
               );
@@ -2354,188 +2393,102 @@ function App() {
         })}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:14}}>
           <button className="btn btn-sm btn-white btn-full" onClick={exportCsv}>Экспорт CSV</button>
-          <button className="btn btn-sm btn-black btn-full" onClick={resetDemoData}>Демо-данные</button>
-        </div>
-        <div style={{marginTop:8}}>
-          <button className="btn btn-sm btn-red btn-full" onClick={clearAllData}>🗑 Очистить все данные</button>
+          <button className="btn btn-sm btn-red btn-full" onClick={resetDemoData}>Сброс демо</button>
         </div>
       </div>
     );
 
-    const AnalyticsTab = () => {
-      // ── monthly income history (last 6 months) ──────────────────────────
-      const monthlyData = useMemo(() => {
-        const now = new Date(); const result = [];
-        for (let i = 5; i >= 0; i--) {
-          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const y = d.getFullYear(), m = d.getMonth();
-          const label = d.toLocaleString('ru', {month:'short'});
-          let earned = 0, lost = 0;
-          lessons.filter(l => {
-            const ld = new Date(l.date + 'T00:00:00');
-            return ld.getFullYear()===y && ld.getMonth()===m && (l.status==='completed'||l.status==='no_show');
-          }).forEach(lesson => {
-            const grp = lesson.type==='group' ? groups.find(g=>g.id===lesson.targetId) : null;
-            const ls = lesson.type==='individual'
-              ? [students.find(s=>s.id===lesson.targetId)].filter(Boolean)
-              : (grp?.studentIds.map(id=>students.find(s=>s.id===id)).filter(Boolean)||[]);
-            ls.forEach(s => {
-              const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
-              const present = lesson.status!=='no_show' && lesson.attendance?.[s.id]!==false;
-              if (present) earned += rate; else lost += rate;
-            });
-          });
-          result.push({label, earned, lost, month: m, year: y});
-        }
-        return result;
-      }, [lessons, students, groups]);
-
-      const maxMonthly = Math.max(...monthlyData.map(d => d.earned + d.lost), 1);
-      const totalEarned = monthlyData.reduce((s,d) => s+d.earned, 0);
-      const totalLost   = monthlyData.reduce((s,d) => s+d.lost, 0);
-      const donutTotal  = totalEarned + totalLost || 1;
-      const earnedPct   = totalEarned / donutTotal;
-      // SVG donut: radius 44, circumference ~276.5
-      const R = 44, circ = 2*Math.PI*R;
-      const earnedDash = earnedPct * circ;
-
-      // per-student earned in selected period
-      const topStudents = studentRows.slice(0,6);
-      const maxStudentEarned = Math.max(...topStudents.map(s=>s.earned), 1);
-
-      return (
-        <div>
-          {/* Period selector */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:16}}>
-            {[['last_month','Прошлый мес.'],['current_month','Этот месяц'],['next_month','Следующий'],['all_time','Всё время']].map(([v,l]) => (
-              <button key={v} onClick={() => setAnalyticsPeriod(v)}
-                style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'2.5px solid #0a0a0a',borderRadius:4,cursor:'pointer',
-                  background: analyticsPeriod===v ? '#0a0a0a' : '#f5f0e8',
-                  color: analyticsPeriod===v ? '#FFE500' : '#0a0a0a',
-                  boxShadow: analyticsPeriod===v ? 'none' : '3px 3px 0 #0a0a0a'}}>
-                {l}
-              </button>
-            ))}
-          </div>
-
-          {/* KEY METRICS */}
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
-            <Stat label="Заработано" value={`${periodEarned.toLocaleString()} ₽`} color="#00C853"/>
-            <Stat label="Потери" value={`${periodLost.toLocaleString()} ₽`} color="#FF2D2D"/>
-          </div>
-
-          {/* ── CHART 1: доходы по месяцам ── */}
-          <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'14px 12px',marginBottom:16,boxShadow:'4px 4px 0 #0a0a0a',background:'#f5f0e8'}}>
-            <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:12}}>ДОХОДЫ ПО МЕСЯЦАМ</div>
-            <div style={{display:'flex',alignItems:'flex-end',gap:6,height:100}}>
-              {monthlyData.map((d,i) => {
-                const earnH = maxMonthly > 0 ? (d.earned / maxMonthly) * 88 : 0;
-                const lostH = maxMonthly > 0 ? (d.lost   / maxMonthly) * 88 : 0;
-                const isCurrent = d.month === new Date().getMonth() && d.year === new Date().getFullYear();
-                return (
-                  <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
-                    <div style={{width:'100%',display:'flex',flexDirection:'column',justifyContent:'flex-end',height:88,gap:1}}>
-                      {d.lost > 0 && (
-                        <div style={{height:lostH, background:'#FF2D2D', borderRadius:'2px 2px 0 0', border:'1.5px solid #0a0a0a', minHeight:2}}/>
-                      )}
-                      <div style={{
-                        height: earnH || 2,
-                        background: isCurrent ? '#0057FF' : '#00C853',
-                        borderRadius: d.lost>0 ? 0 : '2px 2px 0 0',
-                        border:'1.5px solid #0a0a0a',
-                        minHeight:2,
-                      }}/>
-                    </div>
-                    <div style={{fontFamily:'Unbounded,cursive',fontSize:7,fontWeight:700,color: isCurrent?'#0057FF':'#0a0a0a',textTransform:'uppercase'}}>{d.label}</div>
-                    {d.earned > 0 && <div style={{fontSize:7,color:'#555'}}>{(d.earned/1000).toFixed(0)}к</div>}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{display:'flex',gap:12,marginTop:8,justifyContent:'center'}}>
-              <div style={{display:'flex',alignItems:'center',gap:4,fontSize:9}}><div style={{width:10,height:10,background:'#00C853',border:'1.5px solid #0a0a0a',borderRadius:2}}/> Заработано</div>
-              <div style={{display:'flex',alignItems:'center',gap:4,fontSize:9}}><div style={{width:10,height:10,background:'#0057FF',border:'1.5px solid #0a0a0a',borderRadius:2}}/> Текущий мес.</div>
-              <div style={{display:'flex',alignItems:'center',gap:4,fontSize:9}}><div style={{width:10,height:10,background:'#FF2D2D',border:'1.5px solid #0a0a0a',borderRadius:2}}/> Потери</div>
-            </div>
-          </div>
-
-          {/* ── CHART 2: Donut заработано vs потери ── */}
-          <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'14px 12px',marginBottom:16,boxShadow:'4px 4px 0 #0a0a0a',background:'#f5f0e8'}}>
-            <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:12}}>ЗАРАБОТАНО VS ПОТЕРИ (6 мес.)</div>
-            <div style={{display:'flex',alignItems:'center',gap:16}}>
-              <svg width={110} height={110} viewBox="0 0 110 110">
-                <circle cx={55} cy={55} r={R} fill="none" stroke="#FF2D2D" strokeWidth={14} strokeDasharray={circ} strokeDashoffset={0}/>
-                <circle cx={55} cy={55} r={R} fill="none" stroke="#00C853" strokeWidth={14}
-                  strokeDasharray={`${earnedDash} ${circ}`}
-                  strokeDashoffset={circ * 0.25}
-                  strokeLinecap="butt"
-                  style={{transition:'stroke-dasharray .5s'}}/>
-                <circle cx={55} cy={55} r={R} fill="none" stroke="#0a0a0a" strokeWidth={1.5}/>
-                <text x={55} y={51} textAnchor="middle" style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,fill:'#0a0a0a'}}>{Math.round(earnedPct*100)}%</text>
-                <text x={55} y={64} textAnchor="middle" style={{fontSize:8,fill:'#666'}}>доход</text>
-              </svg>
-              <div style={{flex:1,display:'grid',gap:8}}>
-                <div>
-                  <div style={{fontSize:10,color:'#666',marginBottom:2}}>Заработано</div>
-                  <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:16,color:'#00C853'}}>{totalEarned.toLocaleString()} ₽</div>
-                </div>
-                <div>
-                  <div style={{fontSize:10,color:'#666',marginBottom:2}}>Потеряно на пропусках</div>
-                  <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:16,color:'#FF2D2D'}}>{totalLost.toLocaleString()} ₽</div>
-                </div>
-                <div>
-                  <div style={{fontSize:10,color:'#666',marginBottom:2}}>Пропуск всё время</div>
-                  <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:16,color:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853'}}>{Math.round(avgSkipRate*100)}%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── CHART 3: горизонтальные бары по ученикам ── */}
-          {topStudents.length > 0 && (
-            <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'14px 12px',marginBottom:16,boxShadow:'4px 4px 0 #0a0a0a',background:'#f5f0e8'}}>
-              <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:12}}>ТОП УЧЕНИКОВ (период)</div>
-              {topStudents.map((s,i) => {
-                const barW = maxStudentEarned > 0 ? (s.earned / maxStudentEarned) * 100 : 0;
-                const lostW = maxStudentEarned > 0 ? (s.lost / maxStudentEarned) * 100 : 0;
-                return (
-                  <div key={s.id} style={{marginBottom:10}}>
-                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-                      <div style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700}}>{s.name}</div>
-                      <div style={{fontSize:9,color:'#00C853',fontWeight:700}}>{s.earned.toLocaleString()} ₽</div>
-                    </div>
-                    <div style={{height:14,background:'#e0e0e0',borderRadius:3,border:'1.5px solid #0a0a0a',overflow:'hidden',position:'relative'}}>
-                      <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${barW}%`,background: i===0?'#0057FF':'#00C853',transition:'width .4s'}}/>
-                      {s.lost > 0 && <div style={{position:'absolute',right:0,top:0,height:'100%',width:`${lostW}%`,background:'rgba(255,45,45,.25)',transition:'width .4s'}}/>}
-                    </div>
-                    <div style={{fontSize:8,color:'#999',marginTop:2}}>{s.attended}/{s.scheduled} уроков · потери: {s.lost.toLocaleString()} ₽</div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Прогноз */}
-          {analyticsPeriod !== 'all_time' && periodPlanned.length > 0 && (
-            <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a',marginBottom:16}}>
-              <div style={{background:'#0a0a0a',padding:'8px 14px'}}>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'#FFE500',textTransform:'uppercase'}}>ПРОГНОЗ ({periodPlanned.length} уроков осталось)</div>
-              </div>
-              <div style={{background:'#00C853',padding:'10px 14px'}}>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'rgba(0,0,0,.6)',textTransform:'uppercase'}}>Идеальный</div>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:22,fontWeight:900}}>{projIdeal.toLocaleString()} ₽</div>
-                <div style={{fontSize:10,color:'rgba(0,0,0,.6)'}}>Итого: {totalIdeal.toLocaleString()} ₽</div>
-              </div>
-              <div style={{background:'#FFE500',padding:'10px 14px',borderTop:'2.5px solid #0a0a0a'}}>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'rgba(0,0,0,.6)',textTransform:'uppercase'}}>Реалистичный (−{Math.round(avgSkipRate*100)}% пропусков)</div>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:22,fontWeight:900}}>{Math.round(projRealistic).toLocaleString()} ₽</div>
-                <div style={{fontSize:10,color:'rgba(0,0,0,.6)'}}>Итого: {Math.round(totalRealistic).toLocaleString()} ₽</div>
-              </div>
-            </div>
-          )}
+    const AnalyticsTab = () => (
+      <div>
+        {/* Period selector */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:16}}>
+          {[['last_month','Прошлый мес.'],['current_month','Этот месяц'],['next_month','Следующий'],['all_time','Всё время']].map(([v,l]) => (
+            <button key={v} onClick={() => setAnalyticsPeriod(v)}
+              style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'2.5px solid #0a0a0a',borderRadius:4,cursor:'pointer',
+                background: analyticsPeriod===v ? '#0a0a0a' : '#f5f0e8',
+                color: analyticsPeriod===v ? '#FFE500' : '#0a0a0a',
+                boxShadow: analyticsPeriod===v ? 'none' : '3px 3px 0 #0a0a0a'}}>
+              {l}
+            </button>
+          ))}
         </div>
-      );
-    };
+
+        {/* Key metrics */}
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ИТОГ ПЕРИОДА</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
+          <Stat label="Заработано" value={`${periodEarned.toLocaleString()} ₽`} color="#00C853"/>
+          <Stat label="Потеряно на пропусках" value={`${periodLost.toLocaleString()} ₽`} color="#FF2D2D"/>
+        </div>
+
+        {/* Forecasts */}
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10,marginTop:16}}>ПРОГНОЗ (оставшиеся {periodPlanned.length} уроков)</div>
+        <div style={{marginBottom:8,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
+          <div style={{background:'#00C853',padding:'10px 14px'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'rgba(0,0,0,.6)',textTransform:'uppercase'}}>Идеальный (все приходят)</div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:22,fontWeight:900}}>{projIdeal.toLocaleString()} ₽</div>
+            <div style={{fontSize:10,color:'rgba(0,0,0,.6)'}}>Итого за период: {totalIdeal.toLocaleString()} ₽</div>
+          </div>
+          <div style={{background:'#FFE500',padding:'10px 14px',borderTop:'2.5px solid #0a0a0a'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'rgba(0,0,0,.6)',textTransform:'uppercase'}}>Реалистичный (с учётом пропусков {Math.round(avgSkipRate*100)}%)</div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:22,fontWeight:900}}>{Math.round(projRealistic).toLocaleString()} ₽</div>
+            <div style={{fontSize:10,color:'rgba(0,0,0,.6)'}}>Итого за период: {Math.round(totalRealistic).toLocaleString()} ₽</div>
+          </div>
+        </div>
+
+        {/* Skip rate info */}
+        <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 14px',marginBottom:16,background:'#f5f0e8',boxShadow:'3px 3px 0 #0a0a0a'}}>
+          <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:6}}>СТАТИСТИКА ПРОПУСКОВ (все время)</div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div>
+              <div style={{fontSize:11,color:'#666'}}>{totalScheduled} занятий запланировано</div>
+              <div style={{fontSize:11,color:'#666'}}>{totalSkipped} пропущено</div>
+            </div>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:28,fontWeight:900,color:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853'}}>
+              {Math.round(avgSkipRate*100)}%
+            </div>
+          </div>
+          {/* Bar */}
+          <div style={{marginTop:10,height:10,background:'#e0e0e0',borderRadius:3,border:'1.5px solid #0a0a0a',overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${Math.min(avgSkipRate*100,100)}%`,background:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853',transition:'width .3s'}}/>
+          </div>
+        </div>
+
+        {/* Per-student breakdown */}
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ПО УЧЕНИКАМ (период)</div>
+        {studentRows.length === 0 ? (
+          <div style={{textAlign:'center',padding:20,color:'#999',fontFamily:'Unbounded,cursive',fontSize:11}}>Нет данных за период</div>
+        ) : studentRows.map(s => {
+          const skipRate = s.scheduled > 0 ? s.skipped / s.scheduled : 0;
+          const ownSkip  = studentStats[s.id];
+          const allTimeSkip = ownSkip.scheduled > 0 ? ownSkip.skipped / ownSkip.scheduled : 0;
+          return (
+            <div key={s.id} style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 12px',marginBottom:8,boxShadow:'3px 3px 0 #0a0a0a',background:'#f5f0e8'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
+                <div style={{display:'flex',gap:6}}>
+                  <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'#00C853'}}>{s.earned.toLocaleString()} ₽</span>
+                  {s.lost > 0 && <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'#FF2D2D'}}>-{s.lost.toLocaleString()} ₽</span>}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:6,fontSize:10,color:'#666',marginBottom:6}}>
+                <span>{s.attended}/{s.scheduled} уроков</span>
+                <span>·</span>
+                <span style={{color:allTimeSkip>0.2?'#FF2D2D':allTimeSkip>0.1?'#FF8C00':'#00C853',fontWeight:700}}>
+                  пропуск {Math.round(allTimeSkip*100)}% (всё время)
+                </span>
+              </div>
+              {/* Earned bar */}
+              <div style={{height:6,background:'#e0e0e0',borderRadius:3,border:'1px solid #ccc',overflow:'hidden'}}>
+                <div style={{height:'100%',display:'flex'}}>
+                  <div style={{width:`${s.scheduled>0?(s.attended/s.scheduled)*100:0}%`,background:'#00C853',transition:'width .3s'}}/>
+                  <div style={{flex:1,background:'#FF2D2D'}}/>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
 
     return (
       <div>
@@ -2553,6 +2506,7 @@ function App() {
 
   return (
     <div>
+      <UndoToast pendingUndo={pendingUndo} onUndo={handleUndo}/>
       <div className="main">
         {tab==='today'    && <PageToday/>}
         {tab==='schedule' && <PageSchedule/>}
@@ -2619,9 +2573,14 @@ function App() {
       {modal?.type==='group' && (
         <GroupModal group={modal.payload} students={students} onClose={()=>setModal(null)} onSave={saveGroup}/>
       )}
+      {modal?.type==='groupDetail' && (
+        <GroupDetailModal group={modal.payload} students={students} lessons={lessons}
+          onClose={()=>setModal(null)}
+          onEdit={()=>setModal({type:'group',payload:modal.payload})}
+        />
+      )}
       {modal?.type==='lessonStatus' && (
-        <LessonStatusModal lesson={modal.payload} onClose={()=>setModal(null)} onStatus={setLessonStatus} onDelete={delLesson} onDeleteSeries={delSeries} onDeleteGroupLessons={delGroupLessons}
-          onAttend={()=>setModal({type:'attendance', payload:modal.payload})}
+        <LessonStatusModal lesson={modal.payload} onClose={()=>setModal(null)} onStatus={setLessonStatus} onDelete={delLesson}
           onReschedule={(lesson)=>setModal({type:'reschedule',payload:{lesson}})}
           onMessage={(lesson)=>{
             const firstStudent = getLessonStudents(lesson, students, groups)[0];

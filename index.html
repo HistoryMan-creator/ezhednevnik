@@ -554,6 +554,25 @@ const IcoStar    = (p) => <Ico {...p}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3
 const IcoLoader  = (p) => <Ico {...p}><path d="M21 12a9 9 0 1 1-6.2-8.6" cls="spin"/></Ico>;
 const IcoSearch  = (p) => <Ico {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Ico>;
 const IcoBook    = (p) => <Ico {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Ico>;
+const IcoPrint   = (p) => <Ico {...p}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></Ico>;
+const IcoLightbulb = (p) => <Ico {...p}><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></Ico>;
+
+// ── DEFAULT MESSAGE TEMPLATES ───────────────────────────────────────────────────
+const DEFAULT_TEMPLATES = [
+  {id:'reminder', name:'Напоминание', body:'Привет! Напоминаю: занятие {lessonDate}.'},
+  {id:'debt',     name:'Долг',        body:'Привет! По занятиям сейчас долг {balance}. Когда удобно будет оплатить?'},
+  {id:'homework', name:'Домашка',     body:'Привет! Домашка к следующему занятию: {homework}.'},
+  {id:'reschedule',name:'Перенос',   body:'Привет! Нужно перенести занятие {lessonDate}. Напиши, пожалуйста, когда удобно.'},
+];
+
+const renderTemplate = (body, student, targetLesson, lastHomework) => {
+  const lessonText = targetLesson ? `${fmtDate(targetLesson.date)} в ${targetLesson.time}` : 'ближайшее занятие';
+  return (body||'')
+    .replace(/\{name\}/g, student?.name || '')
+    .replace(/\{lessonDate\}/g, lessonText)
+    .replace(/\{balance\}/g, money(Math.abs(student?.balance || 0)))
+    .replace(/\{homework\}/g, lastHomework || 'пока не записана');
+};
 const IcoTg      = ({size=22}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21.8 2.4a1.5 1.5 0 0 0-1.7-.3L2.6 9.4a1.5 1.5 0 0 0 .1 2.8l4.2 1.3 1.6 5a1.5 1.5 0 0 0 2.4.6l2.3-2.1 4.3 3.2a1.5 1.5 0 0 0 2.3-1l2.5-15a1.5 1.5 0 0 0-.5-1.8z" fill="currentColor"/></svg>;
 
 // ── UNDO TOAST ──────────────────────────────────────────────────────────────────
@@ -1122,47 +1141,135 @@ function RescheduleModal({ lesson, onClose, onSave }) {
   );
 }
 
-function MessageModal({ student, lesson, groups, lessons, onClose }) {
-  const [kind, setKind] = useState('reminder');
+function MessageModal({ student, lesson, groups, lessons, templates, onClose, onSaveTemplate }) {
+  const allTemplates = [...DEFAULT_TEMPLATES, ...(templates || [])];
+  const [selId, setSelId] = useState(allTemplates[0]?.id || '');
+  const [editMode, setEditMode] = useState(false); // manage custom templates
+  const [customText, setCustomText] = useState('');
+  const [editingTpl, setEditingTpl] = useState(null); // {id,name,body} | 'new'
+  const [newName, setNewName] = useState('');
+  const [newBody, setNewBody] = useState('');
   const [copied, setCopied] = useState(false);
+
   const targetLesson = lesson || getStudentLessons(student.id, lessons, groups)
     .filter(l=>l.status==='planned')
     .sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
   const lastHomework = getStudentLastHomework(student.id, lessons, groups);
-  const text = (() => {
-    const lessonText = targetLesson ? `${fmtDate(targetLesson.date)} в ${targetLesson.time}` : 'ближайшее занятие';
-    if (kind === 'reminder') return `Привет! Напоминаю: занятие ${lessonText}.`;
-    if (kind === 'debt') return `Привет! По занятиям сейчас долг ${money(Math.abs(student.balance))}. Когда удобно будет оплатить?`;
-    if (kind === 'homework') return `Привет! Домашка к следующему занятию: ${lastHomework || 'пока не записана'}.`;
-    if (kind === 'reschedule') return `Привет! Нужно перенести занятие ${lessonText}. Напиши, пожалуйста, когда удобно.`;
-    return '';
-  })();
+
+  const selectedTpl = allTemplates.find(t=>t.id===selId);
+  const generatedText = selectedTpl ? renderTemplate(selectedTpl.body, student, targetLesson, lastHomework) : '';
+  const text = customText || generatedText;
+
+  // When template changes, reset custom override
+  const pickTemplate = (id) => { setSelId(id); setCustomText(''); setCopied(false); };
+
   const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-    } catch (e) {
-      const area = document.createElement('textarea');
-      area.value = text;
-      document.body.appendChild(area);
-      area.select();
-      document.execCommand('copy');
-      area.remove();
-      setCopied(true);
-    }
+    try { await navigator.clipboard.writeText(text); }
+    catch { const a=document.createElement('textarea');a.value=text;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove(); }
+    setCopied(true); setTimeout(()=>setCopied(false),2000);
   };
+
+  const openTg = () => {
+    if (!student.tgId) return;
+    const id = String(student.tgId).trim();
+    window.open(id.startsWith('@') ? `https://t.me/${id.slice(1)}` : `https://t.me/${id}`, '_blank');
+  };
+
+  if (editMode) {
+    const customTemplates = templates || [];
+    return (
+      <Modal title="Мои шаблоны" onClose={()=>setEditMode(false)}>
+        <div style={{fontSize:11,color:'#666',marginBottom:12}}>
+          Плейсхолдеры: <code>{'{name}'}</code> <code>{'{lessonDate}'}</code> <code>{'{balance}'}</code> <code>{'{homework}'}</code>
+        </div>
+        {editingTpl ? (
+          <div>
+            <FormField label="Название шаблона">
+              <input className="input" value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Например: Опоздание"/>
+            </FormField>
+            <FormField label="Текст">
+              <textarea className="input" value={newBody} onChange={e=>setNewBody(e.target.value)} style={{minHeight:100,resize:'vertical'}}
+                placeholder="Привет, {name}! ..."/>
+            </FormField>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-white btn-full" onClick={()=>{setEditingTpl(null);setNewName('');setNewBody('');}}>Отмена</button>
+              <button className="btn btn-black btn-full" onClick={()=>{
+                if (!newName.trim() || !newBody.trim()) return;
+                if (editingTpl==='new') {
+                  onSaveTemplate([...customTemplates,{id:'custom_'+Date.now(),name:newName,body:newBody}]);
+                } else {
+                  onSaveTemplate(customTemplates.map(t=>t.id===editingTpl.id?{...t,name:newName,body:newBody}:t));
+                }
+                setEditingTpl(null);setNewName('');setNewBody('');
+              }}>Сохранить</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:8,color:'#666'}}>ВСТРОЕННЫЕ</div>
+            {DEFAULT_TEMPLATES.map(t=>(
+              <div key={t.id} style={{padding:'8px 0',borderBottom:'1px solid #ddd',fontSize:11}}>
+                <div style={{fontWeight:700,marginBottom:2}}>{t.name}</div>
+                <div style={{color:'#666',fontSize:10}}>{t.body}</div>
+              </div>
+            ))}
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,margin:'14px 0 8px',color:'#666'}}>МОИ ШАБЛОНЫ</div>
+            {customTemplates.length===0 && <div style={{fontSize:11,color:'#888',marginBottom:12}}>Нет пользовательских шаблонов</div>}
+            {customTemplates.map(t=>(
+              <div key={t.id} style={{padding:'8px 0',borderBottom:'1px solid #ddd',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:11}}>{t.name}</div>
+                  <div style={{color:'#666',fontSize:10,marginTop:2}}>{t.body}</div>
+                </div>
+                <div style={{display:'flex',gap:4,flexShrink:0}}>
+                  <button className="btn btn-sm btn-white" style={{padding:'4px 8px'}} onClick={()=>{setEditingTpl(t);setNewName(t.name);setNewBody(t.body);}}>✎</button>
+                  <button className="btn btn-sm btn-red" style={{padding:'4px 8px'}} onClick={()=>onSaveTemplate(customTemplates.filter(x=>x.id!==t.id))}>✕</button>
+                </div>
+              </div>
+            ))}
+            <div style={{marginTop:12,display:'flex',gap:8}}>
+              <button className="btn btn-black btn-full" onClick={()=>{setEditingTpl('new');setNewName('');setNewBody('');}}>+ Новый шаблон</button>
+            </div>
+          </>
+        )}
+      </Modal>
+    );
+  }
+
   return (
-    <Modal title="Сообщение" onClose={onClose}>
-      <div className="toggle-row">
-        <button className={`toggle-opt ${kind==='reminder'?'active':''}`} onClick={()=>setKind('reminder')}>Напомнить</button>
-        <button className={`toggle-opt ${kind==='debt'?'active':''}`} onClick={()=>setKind('debt')}>Долг</button>
+    <Modal title={`Сообщение · ${student.name}`} onClose={onClose}>
+      {/* Template picker */}
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}}>
+        {allTemplates.map(t=>(
+          <button key={t.id} className={`btn btn-sm ${selId===t.id?'btn-black':'btn-white'}`}
+            style={{padding:'5px 10px',fontSize:9}} onClick={()=>pickTemplate(t.id)}>
+            {t.name}
+          </button>
+        ))}
+        <button className="btn btn-sm btn-white" style={{padding:'5px 10px',fontSize:9,marginLeft:'auto'}} onClick={()=>setEditMode(true)}>
+          ⚙ Шаблоны
+        </button>
       </div>
-      <div className="toggle-row">
-        <button className={`toggle-opt ${kind==='homework'?'active':''}`} onClick={()=>setKind('homework')}>Домашка</button>
-        <button className={`toggle-opt ${kind==='reschedule'?'active':''}`} onClick={()=>setKind('reschedule')}>Перенос</button>
+      {/* Text editor */}
+      <FormField label="Текст">
+        <textarea className="input" value={customText || generatedText}
+          onChange={e=>setCustomText(e.target.value)}
+          style={{minHeight:120,resize:'vertical'}}/>
+      </FormField>
+      {customText && customText !== generatedText && (
+        <button style={{background:'none',border:'none',fontSize:10,color:'#666',cursor:'pointer',marginBottom:8,padding:0}}
+          onClick={()=>setCustomText('')}>← Вернуть из шаблона</button>
+      )}
+      <div style={{display:'flex',gap:8,marginTop:4}}>
+        <button className={`btn btn-full ${copied?'btn-green':'btn-black'}`} onClick={copy} style={{flex:2}}>
+          {copied ? '✓ Скопировано' : 'Скопировать'}
+        </button>
+        {student.tgId && (
+          <button className="btn btn-blue btn-full" onClick={openTg} style={{flex:1,gap:4}}>
+            <IcoTg size={14}/> TG
+          </button>
+        )}
       </div>
-      <FormField label="Текст"><textarea className="input" readOnly value={text} style={{minHeight:120,resize:'vertical'}}/></FormField>
-      <button className={`btn btn-full ${copied?'btn-green':'btn-black'}`} onClick={copy}>{copied ? 'Скопировано' : 'Скопировать'}</button>
     </Modal>
   );
 }
@@ -1208,6 +1315,100 @@ function GroupDetailModal({ group, students, lessons, onClose, onEdit }) {
   );
 }
 
+// ── SCHEDULE EXPORT MODAL ───────────────────────────────────────────────────────
+function ScheduleExportModal({ lessons, onExport, onClose }) {
+  const today = getTodayDate();
+  const [from, setFrom] = useState(today);
+  const [to, setTo] = useState(today);
+  const presets = [
+    {label:'Эта неделя', fn:()=>{
+      const d=new Date(); const dow=d.getDay()||7;
+      const mon=new Date(d); mon.setDate(d.getDate()-dow+1);
+      const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+      setFrom(mon.toISOString().slice(0,10)); setTo(sun.toISOString().slice(0,10));
+    }},
+    {label:'Этот месяц', fn:()=>{
+      const d=new Date();
+      setFrom(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`);
+      const last=new Date(d.getFullYear(),d.getMonth()+1,0);
+      setTo(last.toISOString().slice(0,10));
+    }},
+    {label:'Прошлый месяц', fn:()=>{
+      const d=new Date(); const y=d.getMonth()===0?d.getFullYear()-1:d.getFullYear(); const m=d.getMonth()===0?12:d.getMonth();
+      setFrom(`${y}-${String(m).padStart(2,'0')}-01`);
+      const last=new Date(y,m,0);
+      setTo(last.toISOString().slice(0,10));
+    }},
+  ];
+  const count = lessons.filter(l=>l.date>=from&&l.date<=to).length;
+  return (
+    <Modal title="Экспорт расписания" onClose={onClose}>
+      <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+        {presets.map(p=>(
+          <button key={p.label} className="btn btn-sm btn-white" style={{padding:'6px 10px',fontSize:10}} onClick={p.fn}>{p.label}</button>
+        ))}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+        <FormField label="С"><input className="input" type="date" value={from} onChange={e=>setFrom(e.target.value)}/></FormField>
+        <FormField label="По"><input className="input" type="date" value={to} onChange={e=>setTo(e.target.value)}/></FormField>
+      </div>
+      <div style={{fontSize:11,color:'#666',margin:'8px 0 14px',textAlign:'center'}}>
+        {count} занятий в выбранном периоде
+      </div>
+      <div style={{display:'flex',gap:10}}>
+        <button className="btn btn-white btn-full" onClick={onClose}>Отмена</button>
+        <button className="btn btn-black btn-full" disabled={!count} onClick={()=>{onExport(from,to);onClose();}}>
+          <IcoPrint size={14}/> Печать / PDF
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+// ── TIPS MODAL ─────────────────────────────────────────────────────────────────
+const TIPS = [
+  { icon:'💡', title:'Серии уроков', text:'При создании урока включи "Серия" — приложение автоматически создаст повторяющиеся уроки на несколько недель вперёд. Не нужно добавлять каждый урок вручную.' },
+  { icon:'⚡', title:'Быстрое закрытие дня', text:'На главном экране кнопка "Закрыть N" сразу отмечает все прошедшие уроки как проведённые с полной посещаемостью. 2 секунды вместо 5 минут.' },
+  { icon:'💸', title:'Абонементы', text:'Абонемент списывает уроки с пакета, а не с баланса. Удобно когда ученик платит сразу за месяц — не нужно следить за суммами.' },
+  { icon:'📊', title:'Долги на главной', text:'Раздел "Требует внимания" показывает всех должников прямо на главном экране. Оттуда же можно отправить напоминание.' },
+  { icon:'📱', title:'Telegram-чат одним нажатием', text:'Заполни Telegram ID или @username в профиле ученика — кнопка "Написать" станет синей и откроет чат напрямую без копирования номера.' },
+  { icon:'🎨', title:'Смайлы для групп', text:'Добавь смайл группе (🏛️ 📚 🔢 🌍) — так группы мгновенно различаются в списке, особенно если их много.' },
+  { icon:'💰', title:'Разные ставки', text:'В профиле ученика можно задать разные ставки для разных предметов. Например: история 1500 ₽, обществознание 1200 ₽.' },
+  { icon:'📅', title:'Экспорт расписания', text:'Кнопка PDF в расписании выгружает таблицу за любой период. Удобно сохранить на месяц или отправить родителям.' },
+  { icon:'🔍', title:'Фильтр по предметам', text:'В расписании и списке учеников есть фильтр по предмету — удобно когда ведёшь несколько дисциплин.' },
+  { icon:'✏️', title:'Свои шаблоны сообщений', text:'В окне "Написать" → "⚙ Шаблоны" можно создавать свои тексты с плейсхолдерами {name}, {lessonDate}, {balance}.' },
+];
+
+function TipsModal({ onClose }) {
+  const [idx, setIdx] = useState(0);
+  const tip = TIPS[idx];
+  return (
+    <Modal title="Советы" onClose={onClose}>
+      <div style={{textAlign:'center',padding:'8px 0 20px'}}>
+        <div style={{fontSize:52,marginBottom:12}}>{tip.icon}</div>
+        <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:14,marginBottom:12,lineHeight:1.4}}>{tip.title}</div>
+        <div style={{fontSize:12,lineHeight:1.7,color:'var(--black)',opacity:.8}}>{tip.text}</div>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+        {TIPS.map((_,i)=>(
+          <div key={i} onClick={()=>setIdx(i)} style={{
+            flex:1,height:4,borderRadius:2,cursor:'pointer',
+            background: i===idx ? 'var(--black)' : '#ddd',
+            transition:'background .2s',
+          }}/>
+        ))}
+      </div>
+      <div style={{display:'flex',gap:8}}>
+        <button className="btn btn-white btn-full" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>← Назад</button>
+        {idx < TIPS.length-1
+          ? <button className="btn btn-black btn-full" onClick={()=>setIdx(i=>i+1)}>Вперёд →</button>
+          : <button className="btn btn-black btn-full" onClick={onClose}>Готово ✓</button>
+        }
+      </div>
+    </Modal>
+  );
+}
+
 // ── MAIN APP ───────────────────────────────────────────────────────────────────
 function App() {
   const [tab, setTab]           = useState('today');
@@ -1234,6 +1435,7 @@ function App() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [calMonth, setCalMonth] = useState(new Date());
   const [schedSubject, setSchedSubject] = useState('all');
+  const [customTemplates, setCustomTemplates] = useState([]);
 
   // ── Undo system ──
   const [pendingUndo, setPendingUndo] = useState(null);
@@ -1263,6 +1465,8 @@ function App() {
     setGroups(initial.groups || []);
     setTxs(r?.newTransactions || initial.txs || []);
     setSettings(initial.settings || {theme:'light'});
+    // load custom templates
+    try { const t=localStorage.getItem('tutor-templates'); if(t) setCustomTemplates(JSON.parse(t)); } catch{}
     setLoaded(true);
   }, []);
 
@@ -1270,6 +1474,11 @@ function App() {
     if (!loaded) return;
     saveState({students, groups, lessons, txs, settings});
   }, [loaded, students, groups, lessons, txs, settings]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem('tutor-templates', JSON.stringify(customTemplates));
+  }, [loaded, customTemplates]);
 
   useEffect(() => {
     document.body.dataset.theme = settings.theme || 'light';
@@ -1577,6 +1786,52 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  const exportSchedulePdf = (fromDate, toDate) => {
+    const filtered = lessons
+      .filter(l => l.date >= fromDate && l.date <= toDate)
+      .sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+    const getName = (l) => l.type==='group'
+      ? (groups.find(g=>g.id===l.targetId)?.name || '?')
+      : (students.find(s=>s.id===l.targetId)?.name || '?');
+    const statusRu = (s) => LESSON_STATUS[s]?.label || s;
+    const rows = filtered.map(l => `
+      <tr>
+        <td>${fmtDate(l.date)}</td>
+        <td>${l.time}</td>
+        <td>${getName(l)}</td>
+        <td>${l.type==='group'?'Группа':'Инд.'}</td>
+        <td>${l.subject||'—'}</td>
+        <td>${statusRu(l.status)}</td>
+        <td>${l.topic||'—'}</td>
+      </tr>`).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+    <title>Расписание ${fromDate} — ${toDate}</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:12px;padding:20px;color:#111}
+      h2{margin-bottom:16px}
+      table{border-collapse:collapse;width:100%}
+      th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-size:11px}
+      td{padding:7px 10px;border-bottom:1px solid #ddd;font-size:11px}
+      tr:nth-child(even)td{background:#f9f9f9}
+      @media print{body{padding:0}}
+    </style></head><body>
+    <h2>Расписание: ${fmtDate(fromDate)} — ${fmtDate(toDate)}</h2>
+    <p style="color:#666;margin-bottom:12px">Всего занятий: ${filtered.length}</p>
+    <table>
+      <thead><tr>
+        <th>Дата</th><th>Время</th><th>Ученик/Группа</th><th>Тип</th><th>Предмет</th><th>Статус</th><th>Тема</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </body></html>`;
+    const w = window.open('','_blank');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(()=>{ w.print(); }, 400);
+  };
+
   const toggleTheme = () => {
     setSettings(p => ({...p, theme:p.theme === 'dark' ? 'light' : 'dark'}));
   };
@@ -1619,6 +1874,10 @@ function App() {
               {new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}
             </div>
           </div>
+          <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+            <button className="btn btn-sm btn-white" title="Советы" style={{padding:'8px 10px'}} onClick={()=>setModal({type:'tips'})}>
+              <IcoLightbulb size={16}/>
+            </button>
           {debt > 0 && (
             <div style={{background:'#FF2D2D',border:'2.5px solid #0a0a0a',borderRadius:4,padding:'8px 12px',boxShadow:'4px 4px 0 #0a0a0a'}}>
               <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'#fff',textTransform:'uppercase'}}>Долги</div>
@@ -1629,6 +1888,7 @@ function App() {
           <button className="btn btn-sm btn-white theme-toggle" onClick={toggleTheme} title={settings.theme==='dark'?'Светлая тема':'Тёмная тема'}>
             {settings.theme==='dark'?'☀':'☾'}
           </button>
+          </div>
         </div>
 
         {/* Stats row */}
@@ -1855,7 +2115,20 @@ function App() {
                                       boxShadow: done ? 'none' : '2px 2px 0 #0a0a0a',
                                       minHeight:52, display:'flex', flexDirection:'column',
                                       justifyContent:'space-between', marginBottom:2,
+                                      position:'relative',
                                     }}>
+                                    {/* Debt dot */}
+                                    {(() => {
+                                      const stList = getLessonStudents(l, students, groups);
+                                      const hasDebt = stList.some(s=>s.balance<0);
+                                      return hasDebt ? (
+                                        <div title="Есть задолженность" style={{
+                                          position:'absolute',top:3,right:3,
+                                          width:7,height:7,borderRadius:'50%',
+                                          background:'#FF2D2D',border:'1.5px solid rgba(0,0,0,.3)',
+                                        }}/>
+                                      ) : null;
+                                    })()}
                                     <div style={{wordBreak:'break-word'}}>{shortName}</div>
                                     <div style={{fontSize:8, opacity:.8}}>{statusInfo.short}</div>
                                   </div>
@@ -1889,10 +2162,16 @@ function App() {
                 </div>
                 {dl.length === 0 ? (
                   <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий</div>
-                ) : dl.map(l => (
+                ) : dl.map(l => {
+                  const stList = getLessonStudents(l, students, groups);
+                  const hasDebt = stList.some(s=>s.balance<0);
+                  return (
                   <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
                     <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{l.time}</div>
-                    <div style={{flex:1,fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
+                      {hasDebt && <div style={{fontSize:9,color:'#FF2D2D',fontFamily:'Unbounded,cursive',fontWeight:700,marginTop:2}}>● ДОЛГ</div>}
+                    </div>
                     {l.status==='planned' ? (
                       <button className="btn btn-sm btn-green" onClick={()=>setModal({type:'attendance',payload:l})}><IcoPlay size={13}/></button>
                     ) : l.status==='completed' ? (
@@ -1903,7 +2182,8 @@ function App() {
                     <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#999'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
                     <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })()}
@@ -2030,13 +2310,21 @@ function App() {
         {/* Header + view toggle */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <div style={{fontFamily:'Unbounded,cursive',fontSize:20,fontWeight:900}}>Расписание</div>
-          <div className="toggle-row" style={{marginBottom:0,width:'auto'}}>
-            <button className={`toggle-opt ${schedView==='week'?'active':''}`} style={{padding:'6px 14px',fontSize:10}} onClick={()=>setSchedView('week')}>
-              Неделя
+          <div style={{display:'flex',gap:6,alignItems:'center'}}>
+            <button className="btn btn-sm btn-white" style={{padding:'6px 10px'}} title="Советы" onClick={()=>setModal({type:'tips'})}>
+              <IcoLightbulb size={15}/>
             </button>
-            <button className={`toggle-opt ${schedView==='month'?'active':''}`} style={{padding:'6px 14px',fontSize:10}} onClick={()=>setSchedView('month')}>
-              Месяц
+            <button className="btn btn-sm btn-white" style={{padding:'6px 10px'}} title="Экспорт PDF" onClick={()=>setModal({type:'schedExport'})}>
+              <IcoPrint size={15}/>
             </button>
+            <div className="toggle-row" style={{marginBottom:0,width:'auto'}}>
+              <button className={`toggle-opt ${schedView==='week'?'active':''}`} style={{padding:'6px 14px',fontSize:10}} onClick={()=>setSchedView('week')}>
+                Неделя
+              </button>
+              <button className={`toggle-opt ${schedView==='month'?'active':''}`} style={{padding:'6px 14px',fontSize:10}} onClick={()=>setSchedView('month')}>
+                Месяц
+              </button>
+            </div>
           </div>
         </div>
 
@@ -2138,6 +2426,14 @@ function App() {
                 </div>
                 <div style={{display:'flex',gap:6,marginLeft:8,alignItems:'center'}}>
                   <button title="Карточка" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'studentDetail',payload:s});}}><IcoBook size={18}/></button>
+                  {s.phone && (
+                    <a href={`tel:${s.phone}`} title={s.phone}
+                      className="btn btn-sm btn-white"
+                      style={{padding:'4px 7px',display:'flex',alignItems:'center',textDecoration:'none',color:'inherit'}}
+                      onClick={e=>e.stopPropagation()}>
+                      <IcoPhone size={14}/>
+                    </a>
+                  )}
                   <button title={s.tgId ? 'Открыть в Telegram' : 'Написать'} className={`btn btn-sm ${s.tgId ? 'btn-blue' : 'btn-white'}`} style={{padding:'4px 8px',fontSize:9,gap:4}} onClick={(e)=>{e.stopPropagation(); if(s.tgId){const id=String(s.tgId).trim();window.open(id.startsWith('@')?`https://t.me/${id.slice(1)}`:`https://t.me/${id}`,'_blank');}else{setModal({type:'message',payload:{student:s}});}}}>
                     {s.tgId ? <IcoTg size={12}/> : null}Написать
                   </button>
@@ -2595,7 +2891,19 @@ function App() {
         <RescheduleModal lesson={modal.payload.lesson} onClose={()=>setModal(null)} onSave={rescheduleLesson}/>
       )}
       {modal?.type==='message' && modal.payload?.student && (
-        <MessageModal student={modal.payload.student} lesson={modal.payload.lesson || null} groups={groups} lessons={lessons} onClose={()=>setModal(null)}/>
+        <MessageModal
+          student={modal.payload.student}
+          lesson={modal.payload.lesson || null}
+          groups={groups} lessons={lessons}
+          templates={customTemplates}
+          onSaveTemplate={setCustomTemplates}
+          onClose={()=>setModal(null)}/>
+      )}
+      {modal?.type==='schedExport' && (
+        <ScheduleExportModal lessons={lessons} onExport={exportSchedulePdf} onClose={()=>setModal(null)}/>
+      )}
+      {modal?.type==='tips' && (
+        <TipsModal onClose={()=>setModal(null)}/>
       )}
     </div>
   );

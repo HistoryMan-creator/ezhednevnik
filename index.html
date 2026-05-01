@@ -2,9 +2,13 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>TutorApp</title>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<meta name="description" content="Управление репетиторством: расписание, ученики, финансы"/>
+<meta name="theme-color" content="#0a0a0a"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%230a0a0a'/><text x='96' y='140' text-anchor='middle' font-size='120' font-family='sans-serif' font-weight='900' fill='%23FFE500'>T</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@400;700;900&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -20,6 +24,15 @@
   --border: 2.5px solid var(--black);
   --shadow: 4px 4px 0px var(--black);
   --shadow-lg: 6px 6px 0px var(--black);
+  --text-sec: #666;
+  --text-muted: #999;
+  --bg-subtle: #fffde0;
+  --bg-danger: #fff5f5;
+  --bg-success: #e8ffe8;
+  --border-light: #e0e0e0;
+  --border-dashed: #ccc;
+  --done-bg: #ddd;
+  --done-text: #555;
 }
 body[data-theme="dark"] {
   color-scheme: dark;
@@ -32,14 +45,25 @@ body[data-theme="dark"] {
   --border: 2px solid rgba(238,230,216,.78);
   --shadow: 3px 3px 0px rgba(238,230,216,.28);
   --shadow-lg: 4px 4px 0px rgba(238,230,216,.34);
+  --text-sec: #9b9488;
+  --text-muted: #6b665d;
+  --bg-subtle: #1a1908;
+  --bg-danger: #1a0808;
+  --bg-success: #102a16;
+  --border-light: #2a2720;
+  --border-dashed: #3a3530;
+  --done-bg: #2a2720;
+  --done-text: #8a8580;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body {
-  font-family: 'Martian Mono', monospace;
+  font-family: 'Inter', 'Martian Mono', sans-serif;
   background: var(--white);
   color: var(--black);
   min-height: 100dvh;
   overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
 }
 body[data-theme="dark"] {
   background: #0b0b0a;
@@ -69,7 +93,7 @@ body[data-theme="dark"] .nav-btn { color: #7d786f; border-right-color: #27241f; 
 body[data-theme="dark"] .nav-btn.active { color: var(--yellow); }
 
 /* MAIN */
-.main { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; }
+.main { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; transition: opacity .2s ease; }
 
 /* CARDS */
 .card {
@@ -92,7 +116,6 @@ body[data-theme="dark"] .nav-btn.active { color: var(--yellow); }
   border-radius: 4px; margin-bottom: 10px;
   background: var(--white); overflow: hidden;
   cursor: pointer; transition: transform .1s, box-shadow .1s;
-  active: transform: translate(4px,4px);
 }
 .lesson-card:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--black); }
 .lesson-time {
@@ -327,6 +350,78 @@ body[data-theme="dark"] .badge-yellow {
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
 @keyframes slideDown { from { transform:translateX(-50%) translateY(-80px); opacity:0; } to { transform:translateX(-50%) translateY(0); opacity:1; } }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes modalPop { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.4)} 50%{box-shadow:0 0 0 10px rgba(0,200,83,0)} }
+@keyframes fabPop { from{transform:scale(0) translateY(20px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+.anim-in { animation: fadeIn .25s ease both; }
+.anim-stagger-1 { animation-delay:.03s }
+.anim-stagger-2 { animation-delay:.06s }
+.anim-stagger-3 { animation-delay:.09s }
+.anim-stagger-4 { animation-delay:.12s }
+.anim-stagger-5 { animation-delay:.15s }
+.timer-pulse { animation: pulse 2s infinite; }
+
+/* ── RESPONSIVE: PC ── */
+@media(min-width:769px){
+  .navbar{position:fixed;top:0;bottom:auto;left:0;right:0;border-top:none;border-bottom:var(--border);justify-content:center;gap:0}
+  .nav-btn{flex:0 0 auto;padding:14px 32px;flex-direction:row;gap:8px;font-size:11px}
+  .nav-btn svg{width:18px;height:18px}
+  .main{max-width:1200px;padding:76px 32px 32px}
+  .fab{bottom:32px;right:32px}
+  .modal-overlay{align-items:center}
+  .modal{max-width:560px;border-radius:8px;border:var(--border);max-height:85vh;animation:modalPop .2s ease}
+  .stat-row{grid-template-columns:repeat(4,1fr)}
+  .lesson-card .lesson-actions button:not(.btn){opacity:0;transition:opacity .15s}
+  .lesson-card:hover .lesson-actions button{opacity:1}
+}
+@media(min-width:1025px){
+  .main{max-width:1400px}
+}
+
+/* ── RESPONSIVE: MOBILE ── */
+@media(max-width:768px){
+  .sched-desktop{display:none!important}
+  .sched-mobile{display:block!important}
+  .btn-sm{min-height:40px;padding:10px 12px}
+  .today-desktop-grid{display:block!important}
+}
+@media(min-width:769px){
+  .sched-mobile{display:none!important}
+  .sched-desktop{display:block!important}
+  .today-desktop-grid{display:grid!important;grid-template-columns:3fr 2fr;gap:24px;align-items:start}
+}
+
+/* ── FAB EXPANDED ── */
+.fab-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:97}
+.fab-menu{position:fixed;right:16px;bottom:140px;display:flex;flex-direction:column;gap:10px;z-index:98}
+@media(min-width:769px){.fab-menu{bottom:96px;right:32px}}
+.fab-item{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:4px;border:var(--border);box-shadow:var(--shadow);cursor:pointer;font-family:'Unbounded',cursive;font-size:11px;font-weight:700;white-space:nowrap}
+.fab-item:nth-child(1){animation:fabPop .2s ease both;animation-delay:.0s}
+.fab-item:nth-child(2){animation:fabPop .2s ease both;animation-delay:.05s}
+.fab-item:nth-child(3){animation:fabPop .2s ease both;animation-delay:.1s}
+.fab-item:nth-child(4){animation:fabPop .2s ease both;animation-delay:.15s}
+
+/* ── TIMER BANNER ── */
+.timer-banner{border:var(--border);border-radius:4px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;background:var(--green);box-shadow:var(--shadow)}
+.timer-bar{height:6px;background:rgba(0,0,0,.15);border-radius:3px;flex:1;overflow:hidden}
+.timer-fill{height:100%;background:var(--black);border-radius:3px;transition:width 1s linear}
+
+/* ── GLOBAL SEARCH ── */
+.search-overlay{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.5)}
+.search-panel{position:fixed;top:0;left:0;right:0;z-index:251;background:var(--white);border-bottom:var(--border);padding:12px 16px;box-shadow:var(--shadow-lg)}
+@media(min-width:769px){.search-panel{left:50%;right:auto;transform:translateX(-50%);width:600px;top:8px;border-radius:8px;border:var(--border)}}
+.search-result{padding:10px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s}
+.search-result:hover{background:var(--bg-subtle)}
+
+/* ── NOTIFICATION ── */
+.notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--white)}
+
+/* ── SWIPE SCHEDULE ── */
+.sched-swipe{touch-action:pan-y;overflow:hidden}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -599,18 +694,150 @@ function UndoToast({ pendingUndo, onUndo }) {
   );
 }
 
+// ── SWIPE HOOK ─────────────────────────────────────────────────────────────────
+const useSwipe = (onLeft, onRight, threshold=60) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    let sx=0, sy=0;
+    const ts = e => { sx=e.touches[0].clientX; sy=e.touches[0].clientY; };
+    const te = e => {
+      const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+      if (Math.abs(dx)>threshold && Math.abs(dy)<Math.abs(dx)*0.6) {
+        if (dx<0 && onLeft) onLeft();
+        if (dx>0 && onRight) onRight();
+      }
+    };
+    el.addEventListener('touchstart',ts,{passive:true});
+    el.addEventListener('touchend',te,{passive:true});
+    return()=>{el.removeEventListener('touchstart',ts);el.removeEventListener('touchend',te);};
+  }, [onLeft, onRight]);
+  return ref;
+};
+
+// ── SEARCH COMPONENT ───────────────────────────────────────────────────────────
+function SearchModal({ students, groups, lessons, onClose, onOpenStudent, onOpenGroup, onOpenLesson }) {
+  const [q, setQ] = useState('');
+  const inputRef = useRef(null);
+  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    const fn = e => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
+  }, []);
+  const lq = q.toLowerCase().trim();
+  const rStudents = lq ? students.filter(s => s.name.toLowerCase().includes(lq)).slice(0,5) : [];
+  const rGroups = lq ? groups.filter(g => g.name.toLowerCase().includes(lq)).slice(0,4) : [];
+  const rLessons = lq ? lessons.filter(l => (l.topic||'').toLowerCase().includes(lq) || (l.homework||'').toLowerCase().includes(lq)).slice(0,4) : [];
+  const hasResults = rStudents.length || rGroups.length || rLessons.length;
+  return (
+    <>
+      <div className="search-overlay" onClick={onClose}/>
+      <div className="search-panel">
+        <div style={{display:'flex',gap:10,alignItems:'center'}}>
+          <IcoSearch size={18}/>
+          <input ref={inputRef} className="input" value={q} onChange={e=>setQ(e.target.value)}
+            placeholder="Поиск учеников, групп, тем..." style={{boxShadow:'none',border:'none',flex:1,padding:'8px 0'}}/>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer'}}><IcoX size={18}/></button>
+        </div>
+        {lq && (
+          <div style={{maxHeight:360,overflowY:'auto',marginTop:8}}>
+            {rStudents.length>0 && <>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:900,padding:'6px 0',color:'var(--text-sec)',textTransform:'uppercase'}}>Ученики</div>
+              {rStudents.map(s=>(
+                <div key={s.id} className="search-result" onClick={()=>{onOpenStudent(s);onClose();}}>
+                  <IcoUsers size={15}/>
+                  <div><div style={{fontWeight:700,fontSize:13}}>{s.name}</div><div style={{fontSize:10,color:'var(--text-sec)'}}>{money(s.rate)}/урок</div></div>
+                </div>
+              ))}
+            </>}
+            {rGroups.length>0 && <>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:900,padding:'6px 0',color:'var(--text-sec)',textTransform:'uppercase'}}>Группы</div>
+              {rGroups.map(g=>(
+                <div key={g.id} className="search-result" onClick={()=>{onOpenGroup(g);onClose();}}>
+                  <IcoBook size={15}/>
+                  <div style={{fontWeight:700,fontSize:13}}>{g.emoji||''} {g.name}</div>
+                </div>
+              ))}
+            </>}
+            {rLessons.length>0 && <>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:900,padding:'6px 0',color:'var(--text-sec)',textTransform:'uppercase'}}>Уроки (по теме)</div>
+              {rLessons.map(l=>(
+                <div key={l.id} className="search-result" onClick={()=>{onOpenLesson(l);onClose();}}>
+                  <IcoCal size={15}/>
+                  <div><div style={{fontWeight:700,fontSize:12}}>{l.topic||l.homework}</div><div style={{fontSize:10,color:'var(--text-sec)'}}>{fmtDate(l.date)} · {l.time}</div></div>
+                </div>
+              ))}
+            </>}
+            {!hasResults && <div style={{padding:20,textAlign:'center',color:'var(--text-muted)',fontSize:12}}>Ничего не найдено</div>}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ── TIMER BANNER ───────────────────────────────────────────────────────────────
+function TimerBanner({ lesson, name, onAttend }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(()=>setNow(Date.now()), 1000); return()=>clearInterval(id); }, []);
+  const start = new Date(`${lesson.date}T${lesson.time}`).getTime();
+  const end = start + (lesson.duration||60)*60000;
+  const progress = Math.min(1, Math.max(0, (now-start)/(end-start)));
+  const remaining = Math.max(0, Math.ceil((end-now)/60000));
+  return (
+    <div className="timer-banner timer-pulse">
+      <div style={{flex:1}}>
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>Идёт урок: {name}</div>
+        <div style={{fontSize:12,marginTop:4}}>Осталось {remaining} мин</div>
+        <div className="timer-bar" style={{marginTop:6}}><div className="timer-fill" style={{width:`${progress*100}%`}}/></div>
+      </div>
+      <button className="btn btn-sm btn-black" onClick={onAttend}>Завершить</button>
+    </div>
+  );
+}
+
+// ── NOTIFICATION GENERATOR ─────────────────────────────────────────────────────
+const generateNotifications = (lessons, students, groups) => {
+  const notifs = [];
+  const now = new Date();
+  const today = localDateString();
+  // Upcoming lesson in 15 min
+  lessons.filter(l=>l.status==='planned'&&l.date===today).forEach(l=>{
+    const t=new Date(`${l.date}T${l.time}`);
+    const diff=(t-now)/60000;
+    if(diff>0&&diff<=15) notifs.push({id:'soon_'+l.id,icon:'⏰',text:`Урок через ${Math.ceil(diff)} мин`,sub:l.time});
+  });
+  // Debtors > 2 lessons worth
+  students.filter(s=>!s.archived&&s.balance<-s.rate*2).forEach(s=>{
+    notifs.push({id:'debt_'+s.id,icon:'💸',text:`${s.name}: долг ${money(Math.abs(s.balance))}`,sub:'Большая задолженность'});
+  });
+  // Package ending
+  students.filter(s=>!s.archived&&(s.packageLessons||0)===1).forEach(s=>{
+    notifs.push({id:'pkg_'+s.id,icon:'📦',text:`${s.name}: абонемент заканчивается`,sub:'Остался 1 урок'});
+  });
+  // Tomorrow lessons count
+  const tmrw=new Date(now);tmrw.setDate(tmrw.getDate()+1);
+  const tmrwStr=localDateString(tmrw);
+  const tmrwCount=lessons.filter(l=>l.date===tmrwStr&&l.status==='planned').length;
+  if(tmrwCount>0) notifs.push({id:'tmrw',icon:'📅',text:`Завтра ${tmrwCount} урок(ов)`,sub:''});
+  return notifs;
+};
+
 // ── MODALS ─────────────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    const fn = e => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', fn); };
   }, []);
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,paddingBottom:12,borderBottom:'2.5px solid #0a0a0a'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,paddingBottom:12,borderBottom:'var(--border)'}}>
           <div className="modal-title" style={{marginBottom:0,paddingBottom:0,borderBottom:'none'}}>{title}</div>
-          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',padding:4}}><IcoX size={20}/></button>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'var(--black)'}}><IcoX size={20}/></button>
         </div>
         {children}
       </div>
@@ -1449,6 +1676,10 @@ function App() {
   const [calMonth, setCalMonth] = useState(new Date());
   const [schedSubject, setSchedSubject] = useState('all');
   const [customTemplates, setCustomTemplates] = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifications = useMemo(() => loaded ? generateNotifications(lessons, students, groups) : [], [loaded, lessons, students, groups]);
 
   // ── Undo system ──
   const [pendingUndo, setPendingUndo] = useState(null);
@@ -1486,6 +1717,28 @@ function App() {
   useEffect(() => {
     if (!loaded) return;
     saveState({students, groups, lessons, txs, settings});
+  }, [loaded, students, groups, lessons, txs, settings]);
+
+  // Auto-backup every 5 minutes with rotation (keep last 3)
+  useEffect(() => {
+    if (!loaded) return;
+    const interval = setInterval(() => {
+      try {
+        const backup = JSON.stringify({v:STORAGE_VERSION, t:new Date().toISOString(), data:{students,groups,lessons,txs,settings}});
+        const keys = ['tutor-backup-1','tutor-backup-2','tutor-backup-3'];
+        // Rotate: 2→3, 1→2, new→1
+        const b2 = localStorage.getItem(keys[1]);
+        if (b2) localStorage.setItem(keys[2], b2);
+        const b1 = localStorage.getItem(keys[0]);
+        if (b1) localStorage.setItem(keys[1], b1);
+        localStorage.setItem(keys[0], backup);
+      } catch(e) {
+        if (e.name === 'QuotaExceededError') {
+          console.warn('localStorage full — скачайте бэкап!');
+        }
+      }
+    }, 5*60*1000);
+    return () => clearInterval(interval);
   }, [loaded, students, groups, lessons, txs, settings]);
 
   useEffect(() => {
@@ -1911,13 +2164,25 @@ function App() {
       ...activeStudents.filter(s=>(s.packageLessons||0)===1).slice(0,3).map(s=>({kind:'Абонемент', text:`${s.name}: остался 1 урок`, student:s})),
       ...activeStudents.filter(s=>!futureLessons.some(l=>getLessonStudents(l, students, groups).some(st=>st.id===s.id))).slice(0,3).map(s=>({kind:'Нет уроков', text:s.name, student:s})),
     ].slice(0,6);
+    // Active lesson detection
+    const currentLesson = todayLessons.find(l => {
+      if (l.status !== 'planned') return false;
+      const s = new Date(`${l.date}T${l.time}`).getTime();
+      const e = s + (l.duration||60)*60000;
+      return now.getTime() >= s && now.getTime() <= e;
+    });
 
     return (
       <div>
+        {/* Timer banner for active lesson */}
+        {currentLesson && (
+          <TimerBanner lesson={currentLesson} name={getLessonName(currentLesson)}
+            onAttend={()=>setModal({type:'attendance',payload:currentLesson})}/>
+        )}
         {/* Header */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
           <div>
-            <div style={{fontFamily:'Unbounded,cursive',fontSize:11,color:'#666',textTransform:'uppercase',letterSpacing:'.05em'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:11,color:'var(--text-sec)',textTransform:'uppercase',letterSpacing:'.05em'}}>
               {new Date().toLocaleDateString('ru-RU',{weekday:'long'})}
             </div>
             <div style={{fontFamily:'Unbounded,cursive',fontSize:28,fontWeight:900,lineHeight:1.1}}>
@@ -1929,7 +2194,7 @@ function App() {
               <IcoLightbulb size={16}/>
             </button>
           {debt > 0 && (
-            <div style={{background:'#FF2D2D',border:'2.5px solid #0a0a0a',borderRadius:4,padding:'8px 12px',boxShadow:'4px 4px 0 #0a0a0a'}}>
+            <div style={{background:'var(--red)',border:'var(--border)',borderRadius:4,padding:'8px 12px',boxShadow:'var(--shadow)'}}>
               <div style={{fontFamily:'Unbounded,cursive',fontSize:9,color:'#fff',textTransform:'uppercase'}}>Долги</div>
               <div style={{fontFamily:'Unbounded,cursive',fontSize:16,fontWeight:900,color:'#fff'}}>{debt.toLocaleString()} ₽</div>
               <div style={{fontSize:10,color:'rgba(255,255,255,.8)'}}>{debtors} чел.</div>
@@ -1943,8 +2208,8 @@ function App() {
 
         {/* Stats row */}
         <div className="stat-row">
-          <div className="stat-card" style={{background:'#0a0a0a',color:'#FFE500'}}>
-            <div className="stat-label" style={{color:'#888'}}>Уроков сегодня</div>
+          <div className="stat-card" style={{background:'var(--black)',color:'var(--yellow)'}}>
+            <div className="stat-label" style={{color:'var(--text-muted)'}}>Уроков сегодня</div>
             <div className="stat-value">{todayLessons.length}</div>
           </div>
           <div className="stat-card">
@@ -1960,7 +2225,7 @@ function App() {
               <div style={{fontSize:12,lineHeight:1.6}}>
                 {nextLesson ? <>Следующий: <strong>{nextLesson.time}</strong> · {getLessonName(nextLesson)}</> : 'Все уроки на сегодня обработаны'}
               </div>
-              <div style={{fontSize:11,color:'#666',marginTop:4}}>
+              <div style={{fontSize:11,color:'var(--text-sec)',marginTop:4}}>
                 Оплаты: {money(earnedToday)} · списания: {money(chargedToday)}
               </div>
             </div>
@@ -1974,7 +2239,7 @@ function App() {
           <div className="card" style={{padding:12,marginBottom:16}}>
             <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:8}}>ТРЕБУЕТ ВНИМАНИЯ</div>
             {attention.map((item,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:i?'1px solid #ddd':'none'}}>
+              <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:i?'1px solid var(--border-light)':'none'}}>
                 <span className={`badge ${item.kind==='Долг'?'badge-red':item.kind==='Абонемент'?'badge-yellow':'badge-green'}`}>{item.kind}</span>
                 <div style={{fontSize:12,flex:1}}>{item.text}</div>
                 <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'message',payload:{student:item.student}})}>Текст</button>
@@ -1993,7 +2258,7 @@ function App() {
 
         {todayLessons.length === 0 ? (
           <div className="card" style={{padding:24,textAlign:'center'}}>
-            <div style={{fontFamily:'Unbounded,cursive',fontSize:13,color:'#999',lineHeight:1.5}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:13,color:'var(--text-muted)',lineHeight:1.5}}>
               Уроков нет
             </div>
           </div>
@@ -2021,7 +2286,7 @@ function App() {
               <div style={{fontFamily:'Unbounded,cursive',fontSize:13,fontWeight:900,marginBottom:10}}>БЛИЖАЙШИЕ</div>
               {upcoming.map(({date,lessons:ls}) => (
                 <div key={date} style={{marginBottom:8}}>
-                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,color:'#666',marginBottom:6,textTransform:'uppercase'}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,color:'var(--text-sec)',marginBottom:6,textTransform:'uppercase'}}>
                     {new Date(date+'T00:00:00').toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'short'})}
                   </div>
                   {ls.map(l => (
@@ -2071,8 +2336,22 @@ function App() {
       const [wStart, wEnd] = [weekDates[0], weekDates[6]];
       const fmtShort = (ds) => new Date(ds+'T00:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
 
+      const swipeRef = useSwipe(
+        () => setWeekOffset(w=>w+1),
+        () => setWeekOffset(w=>w-1)
+      );
+
+      // Mobile: selected day within week
+      const [mobileDay, setMobileDay] = useState(() => {
+        const todayIdx = weekDates.indexOf(today);
+        return todayIdx >= 0 ? todayIdx : 0;
+      });
+      const mobileDayLessons = scheduleLessons
+        .filter(l => l.date === weekDates[mobileDay])
+        .sort((a,b) => a.time.localeCompare(b.time));
+
       return (
-        <div>
+        <div ref={swipeRef} className="sched-swipe">
           {/* Week nav */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
             <button className="btn btn-sm btn-white" onClick={()=>setWeekOffset(w=>w-1)}><IcoChevL size={16}/></button>
@@ -2080,121 +2359,156 @@ function App() {
               <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>
                 {weekOffset===0 ? 'ЭТА НЕДЕЛЯ' : weekOffset===1 ? 'СЛЕДУЮЩАЯ' : weekOffset===-1 ? 'ПРОШЛАЯ' : `${weekOffset>0?'+':''}${weekOffset} НЕД.`}
               </div>
-              <div style={{fontSize:10,color:'#666'}}>{fmtShort(wStart)} — {fmtShort(wEnd)}</div>
+              <div style={{fontSize:10,color:'var(--text-sec)'}}>{fmtShort(wStart)} — {fmtShort(wEnd)}</div>
             </div>
             <button className="btn btn-sm btn-white" onClick={()=>setWeekOffset(w=>w+1)}><IcoChevR size={16}/></button>
           </div>
 
-          {/* Grid */}
-          <div style={{overflowX:'auto',marginLeft:-16,marginRight:-16,paddingLeft:16,paddingRight:16}}>
-            <div style={{overflowX:'auto', marginLeft:-16, marginRight:-16}}>
-              <table style={{borderCollapse:'separate', borderSpacing:4, minWidth:360, width:'100%', tableLayout:'fixed', paddingLeft:16, paddingRight:16, boxSizing:'border-box'}}>
-                {/* HEADER: time col (narrow) + 7 equal day cols */}
-                <thead>
-                  <tr>
-                    <th style={{width:44}}/>
-                    {weekDates.map((d, i) => {
-                      const isToday = d === today;
-                      const num = new Date(d+'T00:00:00').getDate();
+          {/* ══════ MOBILE: Day strip + card list ══════ */}
+          <div className="sched-mobile">
+            <div className="day-strip" style={{marginBottom:14}}>
+              {weekDates.map((d, i) => {
+                const isToday = d === today;
+                const num = new Date(d+'T00:00:00').getDate();
+                const dayCount = scheduleLessons.filter(l=>l.date===d).length;
+                return (
+                  <button key={d} className={`day-btn ${mobileDay===i?'active':''}`}
+                    onClick={()=>setMobileDay(i)} style={{minWidth:44,position:'relative'}}>
+                    <span className="day-btn-name">{DAY_LABELS[i]}</span>
+                    <span className="day-btn-date">{num}</span>
+                    {dayCount>0 && <div className="day-btn-dot" style={{background: isToday?'var(--yellow)':'var(--blue)'}}/>}
+                  </button>
+                );
+              })}
+            </div>
+            {mobileDayLessons.length === 0 ? (
+              <div className="card" style={{padding:24,textAlign:'center'}}>
+                <div style={{fontFamily:'Unbounded,cursive',fontSize:12,color:'var(--text-muted)'}}>
+                  Нет уроков · <span style={{cursor:'pointer',color:'var(--blue)'}} onClick={()=>setModal({type:'lesson',payload:{date:weekDates[mobileDay]}})}>+ добавить</span>
+                </div>
+              </div>
+            ) : mobileDayLessons.map((l,idx) => (
+              <LessonCard key={l.id} lesson={l} name={getLessonName(l)}
+                onEdit={()=>setModal({type:'lesson',payload:{lesson:l}})}
+                onAttend={()=>setModal({type:'attendance',payload:l})}
+                onStatus={()=>setModal({type:'lessonStatus',payload:l})}
+                onDelete={(e)=>delLesson(l.id,e)}
+              />
+            ))}
+          </div>
+
+          {/* ══════ DESKTOP: Table grid ══════ */}
+          <div className="sched-desktop">
+            <div style={{overflowX:'auto',marginLeft:-16,marginRight:-16,paddingLeft:16,paddingRight:16}}>
+              <div style={{overflowX:'auto', marginLeft:-16, marginRight:-16}}>
+                <table style={{borderCollapse:'separate', borderSpacing:4, minWidth:600, width:'100%', tableLayout:'fixed', paddingLeft:16, paddingRight:16, boxSizing:'border-box'}}>
+                  <thead>
+                    <tr>
+                      <th style={{width:52}}/>
+                      {weekDates.map((d, i) => {
+                        const isToday = d === today;
+                        const num = new Date(d+'T00:00:00').getDate();
+                        return (
+                          <th key={d} onClick={() => setSelDate(d)}
+                            style={{
+                              textAlign:'center', padding:'8px 4px', cursor:'pointer',
+                              border:'var(--border)', borderRadius:4,
+                              background: isToday ? 'var(--black)' : selDate===d ? 'var(--yellow)' : 'var(--white)',
+                              color: isToday ? 'var(--yellow)' : 'var(--black)',
+                              boxShadow:'var(--shadow)',
+                              fontFamily:'Unbounded,cursive', fontWeight:900,
+                            }}>
+                            <div style={{fontSize:10}}>{DAY_LABELS[i]}</div>
+                            <div style={{fontSize:18, lineHeight:1}}>{num}</div>
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allTimes.length === 0 ? (
+                      <tr><td colSpan={8}>
+                        <div style={{textAlign:'center', padding:'32px 0', fontFamily:'Unbounded,cursive', fontSize:12, color:'var(--text-muted)', border:'2.5px dashed var(--border-dashed)', borderRadius:4}}>
+                          Уроков на эту неделю нет
+                        </div>
+                      </td></tr>
+                    ) : allTimes.map(time => {
+                      const byDay = {};
+                      weekDates.forEach((d, i) => {
+                        byDay[i] = scheduleLessons.filter(l => l.date === d && l.time === time);
+                      });
                       return (
-                        <th key={d} onClick={() => setSelDate(d)}
-                          style={{
-                            textAlign:'center', padding:'6px 2px', cursor:'pointer',
-                            border:'2.5px solid #0a0a0a', borderRadius:4,
-                            background: isToday ? '#0a0a0a' : selDate===d ? '#FFE500' : '#f5f0e8',
-                            color: isToday ? '#FFE500' : '#0a0a0a',
-                            boxShadow:'3px 3px 0 #0a0a0a',
-                            fontFamily:'Unbounded,cursive', fontWeight:900,
-                          }}>
-                          <div style={{fontSize:9}}>{DAY_LABELS[i]}</div>
-                          <div style={{fontSize:16, lineHeight:1}}>{num}</div>
-                        </th>
-                      );
-                    })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {allTimes.length === 0 ? (
-                    <tr><td colSpan={8}>
-                      <div style={{textAlign:'center', padding:'32px 0', fontFamily:'Unbounded,cursive', fontSize:12, color:'#999', border:'2.5px dashed #ccc', borderRadius:4}}>
-                        Уроков на эту неделю нет
-                      </div>
-                    </td></tr>
-                  ) : allTimes.map(time => {
-                    const byDay = {};
-                    weekDates.forEach((d, i) => {
-                      byDay[i] = scheduleLessons.filter(l => l.date === d && l.time === time);
-                    });
-                    return (
-                      <tr key={time}>
-                        {/* Time label cell — same width as header th[0] */}
-                        <td style={{
-                          textAlign:'center', fontFamily:'Unbounded,cursive',
-                          fontSize:10, fontWeight:700, color:'#666',
-                          verticalAlign:'middle', padding:'2px 0', width:44,
-                        }}>{time}</td>
-                        {/* 7 day cells — each guaranteed its column */}
-                        {[0,1,2,3,4,5,6].map(di => {
-                          const cell = byDay[di] || [];
-                          if (cell.length === 0) {
+                        <tr key={time}>
+                          <td style={{
+                            textAlign:'center', fontFamily:'Unbounded,cursive',
+                            fontSize:11, fontWeight:700, color:'var(--text-sec)',
+                            verticalAlign:'middle', padding:'2px 0', width:52,
+                          }}>{time}</td>
+                          {[0,1,2,3,4,5,6].map(di => {
+                            const cell = byDay[di] || [];
+                            if (cell.length === 0) {
+                              return (
+                                <td key={di} style={{padding:2, verticalAlign:'top'}}>
+                                  <div onClick={() => setModal({type:'lesson', payload:{date: weekDates[di]}})}
+                                    style={{minHeight:60, border:'1.5px dashed var(--border-dashed)', borderRadius:4, cursor:'pointer', transition:'background .15s'}}
+                                    onMouseEnter={e=>e.currentTarget.style.background='var(--bg-subtle)'}
+                                    onMouseLeave={e=>e.currentTarget.style.background='transparent'}/>
+                                </td>
+                              );
+                            }
                             return (
                               <td key={di} style={{padding:2, verticalAlign:'top'}}>
-                                <div onClick={() => setModal({type:'lesson', payload:{date: weekDates[di]}})}
-                                  style={{minHeight:52, border:'1.5px dashed #ddd', borderRadius:4, cursor:'pointer'}}/>
+                                {cell.map(l => {
+                                  const name = getLessonName(l);
+                                  const shortName = name.split('(')[0].trim()
+                                    .replace('История','Ист.').replace('Общество','Общ.');
+                                  const done = isFinalLesson(l);
+                                  const statusInfo = LESSON_STATUS[l.status] || LESSON_STATUS.planned;
+                                  return (
+                                    <div key={l.id}
+                                      onClick={() => setModal({type:l.status==='planned'||l.status==='completed'?'attendance':'lessonStatus', payload:l})}
+                                      style={{
+                                        background: done ? 'var(--done-bg)' : l.type==='group' ? 'var(--blue)' : 'var(--yellow)',
+                                        color: done ? 'var(--done-text)' : l.type==='group' ? '#fff' : 'var(--black)',
+                                        border:'var(--border)', borderRadius:4,
+                                        padding:'6px', fontSize:10,
+                                        fontFamily:'Unbounded,cursive', fontWeight:700,
+                                        lineHeight:1.3, cursor:'pointer',
+                                        boxShadow: done ? 'none' : 'var(--shadow)',
+                                        minHeight:60, display:'flex', flexDirection:'column',
+                                        justifyContent:'space-between', marginBottom:2,
+                                        position:'relative', transition:'transform .1s',
+                                      }}
+                                      onMouseEnter={e=>{if(!done)e.currentTarget.style.transform='translateY(-2px)'}}
+                                      onMouseLeave={e=>e.currentTarget.style.transform='none'}>
+                                      {(() => {
+                                        const stList = getLessonStudents(l, students, groups);
+                                        const hasDebt = stList.some(s=>s.balance<0);
+                                        return hasDebt ? (
+                                          <div title="Есть задолженность" style={{
+                                            position:'absolute',top:3,right:3,
+                                            width:7,height:7,borderRadius:'50%',
+                                            background:'var(--red)',border:'1.5px solid rgba(0,0,0,.3)',
+                                          }}/>
+                                        ) : null;
+                                      })()}
+                                      <div style={{wordBreak:'break-word'}}>{shortName}</div>
+                                      <div style={{fontSize:8,opacity:.8,display:'flex',justifyContent:'space-between'}}>
+                                        <span>{statusInfo.short}</span>
+                                        {l.duration && l.duration !== 60 && <span>{l.duration < 60 ? `${l.duration}м` : l.duration === 90 ? '1.5ч' : '2ч'}</span>}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </td>
                             );
-                          }
-                          return (
-                            <td key={di} style={{padding:2, verticalAlign:'top'}}>
-                              {cell.map(l => {
-                                const name = getLessonName(l);
-                                const shortName = name.split('(')[0].trim()
-                                  .replace('История','Ист.').replace('Общество','Общ.');
-                                const done = isFinalLesson(l);
-                                const statusInfo = LESSON_STATUS[l.status] || LESSON_STATUS.planned;
-                                return (
-                                  <div key={l.id}
-                                    onClick={() => setModal({type:l.status==='planned'||l.status==='completed'?'attendance':'lessonStatus', payload:l})}
-                                    style={{
-                                      background: done ? '#ddd' : l.type==='group' ? '#0057FF' : '#FFE500',
-                                      color: done ? '#555' : l.type==='group' ? '#fff' : '#0a0a0a',
-                                      border:'2px solid #0a0a0a', borderRadius:4,
-                                      padding:'5px 5px', fontSize:9,
-                                      fontFamily:'Unbounded,cursive', fontWeight:700,
-                                      lineHeight:1.3, cursor:'pointer',
-                                      boxShadow: done ? 'none' : '2px 2px 0 #0a0a0a',
-                                      minHeight:52, display:'flex', flexDirection:'column',
-                                      justifyContent:'space-between', marginBottom:2,
-                                      position:'relative',
-                                    }}>
-                                    {/* Debt dot */}
-                                    {(() => {
-                                      const stList = getLessonStudents(l, students, groups);
-                                      const hasDebt = stList.some(s=>s.balance<0);
-                                      return hasDebt ? (
-                                        <div title="Есть задолженность" style={{
-                                          position:'absolute',top:3,right:3,
-                                          width:7,height:7,borderRadius:'50%',
-                                          background:'#FF2D2D',border:'1.5px solid rgba(0,0,0,.3)',
-                                        }}/>
-                                      ) : null;
-                                    })()}
-                                    <div style={{wordBreak:'break-word'}}>{shortName}</div>
-                                    <div style={{fontSize:8,opacity:.8,display:'flex',justifyContent:'space-between'}}>
-                                      <span>{statusInfo.short}</span>
-                                      {l.duration && l.duration !== 60 && <span>{l.duration < 60 ? `${l.duration}м` : l.duration === 90 ? '1.5ч' : '2ч'}</span>}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -2203,30 +2517,30 @@ function App() {
             const dl = scheduleLessons.filter(l=>l.date===selDate).sort((a,b)=>a.time.localeCompare(b.time));
             const obj = new Date(selDate+'T00:00:00');
             return (
-              <div style={{marginTop:16,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
-                <div style={{background:'#0a0a0a',color:'#FFE500',padding:'8px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{marginTop:16,border:'var(--border)',borderRadius:4,overflow:'hidden',boxShadow:'var(--shadow)'}}>
+                <div style={{background:'var(--black)',color:'var(--yellow)',padding:'8px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                   <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>
                     {obj.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'}).toUpperCase()}
                   </span>
-                  <button className="btn btn-sm" style={{padding:'4px 8px',fontSize:9,background:'#FFE500',color:'#0a0a0a',boxShadow:'2px 2px 0 #FFE500'}}
+                  <button className="btn btn-sm" style={{padding:'4px 8px',fontSize:9,background:'var(--yellow)',color:'var(--black)',boxShadow:'none'}}
                     onClick={()=>setModal({type:'lesson',payload:{date:selDate}})}>
                     + УРОК
                   </button>
                 </div>
                 {dl.length === 0 ? (
-                  <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий</div>
+                  <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'var(--text-muted)'}}>Нет занятий</div>
                 ) : dl.map(l => {
                   const stList = getLessonStudents(l, students, groups);
                   const hasDebt = stList.some(s=>s.balance<0);
                   return (
-                  <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
-                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>
+                  <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid var(--border-light)'}}>
+                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'var(--text-muted)':'var(--black)'}}>
                       <div>{l.time}</div>
-                      {l.duration && l.duration !== 60 && <div style={{fontSize:9,fontWeight:400,color:'#888',marginTop:1}}>{l.duration < 60 ? `${l.duration}м` : l.duration === 90 ? '1.5ч' : '2ч'}</div>}
+                      {l.duration && l.duration !== 60 && <div style={{fontSize:9,fontWeight:400,color:'var(--text-sec)',marginTop:1}}>{l.duration < 60 ? `${l.duration}м` : l.duration === 90 ? '1.5ч' : '2ч'}</div>}
                     </div>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
-                      {hasDebt && <div style={{fontSize:9,color:'#FF2D2D',fontFamily:'Unbounded,cursive',fontWeight:700,marginTop:2}}>● ДОЛГ</div>}
+                      <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'var(--text-muted)':'var(--black)'}}>{getLessonName(l)}</div>
+                      {hasDebt && <div style={{fontSize:9,color:'var(--red)',fontFamily:'Unbounded,cursive',fontWeight:700,marginTop:2}}>● ДОЛГ</div>}
                     </div>
                     {l.status==='planned' ? (
                       <button className="btn btn-sm btn-green" onClick={()=>setModal({type:'attendance',payload:l})}><IcoPlay size={13}/></button>
@@ -2235,8 +2549,8 @@ function App() {
                     ) : (
                       <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'lessonStatus',payload:l})}>{LESSON_STATUS[l.status]?.short}</button>
                     )}
-                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#999'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
-                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'var(--text-muted)'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
+                    <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'var(--text-muted)'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
                   </div>
                   );
                 })}
@@ -2275,7 +2589,7 @@ function App() {
           {/* Day-of-week header */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:4}}>
             {DAY_LABELS.map(d => (
-              <div key={d} style={{textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,color:'#666',padding:'4px 0'}}>{d}</div>
+              <div key={d} style={{textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,color:'var(--text-sec)',padding:'4px 0'}}>{d}</div>
             ))}
           </div>
 
@@ -2292,23 +2606,23 @@ function App() {
               return (
                 <div key={day} onClick={()=>setSelDate(ds)}
                   style={{
-                    border:'2.5px solid #0a0a0a', borderRadius:4, cursor:'pointer',
+                    border:'var(--border)', borderRadius:4, cursor:'pointer',
                     padding:'6px 4px', minHeight:52, position:'relative',
-                    background: isSel ? '#0a0a0a' : isToday ? '#FFE500' : '#f5f0e8',
-                    color: isSel ? '#FFE500' : '#0a0a0a',
-                    boxShadow: isSel ? 'none' : '3px 3px 0 #0a0a0a',
+                    background: isSel ? 'var(--black)' : isToday ? 'var(--yellow)' : 'var(--white)',
+                    color: isSel ? 'var(--yellow)' : 'var(--black)',
+                    boxShadow: isSel ? 'none' : 'var(--shadow)',
                     transition:'transform .1s',
                   }}>
                   <div style={{fontFamily:'Unbounded,cursive',fontSize:13,fontWeight:900,lineHeight:1}}>{day}</div>
                   {/* Lesson dots / counts */}
                   <div style={{marginTop:4,display:'flex',flexDirection:'column',gap:2}}>
                     {planned > 0 && (
-                      <div style={{background: isSel?'#FFE500':'#0057FF', color: isSel?'#0a0a0a':'#fff', borderRadius:3, padding:'1px 4px', fontSize:9, fontFamily:'Unbounded,cursive', fontWeight:700}}>
+                      <div style={{background: isSel?'var(--yellow)':'var(--blue)', color: isSel?'var(--black)':'#fff', borderRadius:3, padding:'1px 4px', fontSize:9, fontFamily:'Unbounded,cursive', fontWeight:700}}>
                         {planned}
                       </div>
                     )}
                     {done > 0 && (
-                      <div style={{background: isSel?'rgba(255,255,255,.3)':'#e0e0e0', color: isSel?'#FFE500':'#666', borderRadius:3, padding:'1px 4px', fontSize:9, fontFamily:'Unbounded,cursive', fontWeight:700}}>
+                      <div style={{background: isSel?'rgba(255,255,255,.3)':'var(--border-light)', color: isSel?'var(--yellow)':'var(--text-sec)', borderRadius:3, padding:'1px 4px', fontSize:9, fontFamily:'Unbounded,cursive', fontWeight:700}}>
                         ✓{done}
                       </div>
                     )}
@@ -2319,24 +2633,24 @@ function App() {
           </div>
 
           {/* Selected day panel */}
-          <div style={{marginTop:16,border:'2.5px solid #0a0a0a',borderRadius:4,overflow:'hidden',boxShadow:'4px 4px 0 #0a0a0a'}}>
-            <div style={{background:'#0a0a0a',color:'#FFE500',padding:'8px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{marginTop:16,border:'var(--border)',borderRadius:4,overflow:'hidden',boxShadow:'var(--shadow)'}}>
+            <div style={{background:'var(--black)',color:'var(--yellow)',padding:'8px 12px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
               <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900}}>
                 {selDateObj.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long'}).toUpperCase()}
               </span>
-              <button className="btn btn-sm" style={{padding:'4px 8px',fontSize:9,background:'#FFE500',color:'#0a0a0a',boxShadow:'2px 2px 0 #FFE500'}}
+              <button className="btn btn-sm" style={{padding:'4px 8px',fontSize:9,background:'var(--yellow)',color:'var(--black)',boxShadow:'none'}}
                 onClick={()=>setModal({type:'lesson',payload:{date:selDate}})}>
                 + УРОК
               </button>
             </div>
             {selDayLessons.length === 0 ? (
-              <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'#999'}}>Нет занятий — нажмите + чтобы добавить</div>
+              <div style={{padding:'16px',textAlign:'center',fontFamily:'Unbounded,cursive',fontSize:11,color:'var(--text-muted)'}}>Нет занятий — нажмите + чтобы добавить</div>
             ) : selDayLessons.map(l => (
-              <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
-                <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{l.time}</div>
+              <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid var(--border-light)'}}>
+                <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'var(--text-muted)':'var(--black)'}}>{l.time}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
-                  <span style={{fontSize:9,background:l.type==='group'?'#0057FF':'#FFE500',color:l.type==='group'?'#fff':'#0a0a0a',padding:'1px 5px',borderRadius:3,fontFamily:'Unbounded,cursive',fontWeight:700}}>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'var(--text-muted)':'var(--black)'}}>{getLessonName(l)}</div>
+                  <span style={{fontSize:9,background:l.type==='group'?'var(--blue)':'var(--yellow)',color:l.type==='group'?'#fff':'var(--black)',padding:'1px 5px',borderRadius:3,fontFamily:'Unbounded,cursive',fontWeight:700}}>
                     {l.type==='group'?'ГР':'ИНД'}
                   </span>
                   {l.status !== 'planned' && (
@@ -2352,8 +2666,8 @@ function App() {
                 ) : (
                   <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'lessonStatus',payload:l})}>{LESSON_STATUS[l.status]?.short}</button>
                 )}
-                <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#999'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
-                <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'#bbb'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
+                <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'var(--text-muted)'}} onClick={()=>setModal({type:'lessonStatus',payload:l})}><IcoEdit size={15}/></button>
+                <button style={{background:'none',border:'none',cursor:'pointer',padding:4,color:'var(--text-muted)'}} onClick={(e)=>delLesson(l.id,e)}><IcoTrash size={15}/></button>
               </div>
             ))}
           </div>
@@ -2464,10 +2778,10 @@ function App() {
               <div key={s.id} className="student-item" onClick={()=>setModal({type:'studentDetail',payload:s})} style={{cursor:'pointer',opacity:s.archived ? .55 : 1}}>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:13,marginBottom:4}}>{s.name}</div>
-                  <div style={{fontSize:11,color:'#666'}}>{money(s.rate)}/урок · {s.phone}</div>
+                  <div style={{fontSize:11,color:'var(--text-sec)'}}>{money(s.rate)}/урок · {s.phone}</div>
                   <div style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:5}}>
                     {(s.subjects || ['История']).map(subject=>(
-                      <span key={subject} className="lesson-tag" style={{background:subjectColor(subject),color:subject==='Общество'||subject==='Математика'?'#0a0a0a':'#fff'}}>
+                      <span key={subject} className="lesson-tag" style={{background:subjectColor(subject),color:subject==='Общество'||subject==='Математика'?'var(--black)':'#fff'}}>
                         {subject}
                       </span>
                     ))}
@@ -2661,10 +2975,10 @@ function App() {
       .sort((a, b) => b.earned - a.earned);
 
     const Stat = ({label, value, color, sub}) => (
-      <div style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 12px',boxShadow:'3px 3px 0 #0a0a0a',background:color||'#f5f0e8'}}>
-        <div style={{fontFamily:'Unbounded,cursive',fontSize:9,textTransform:'uppercase',letterSpacing:'.05em',color:color?'rgba(255,255,255,.7)':'#666',marginBottom:4}}>{label}</div>
-        <div style={{fontFamily:'Unbounded,cursive',fontSize:18,fontWeight:900,color:color?'#fff':'#0a0a0a',lineHeight:1}}>{value}</div>
-        {sub && <div style={{fontSize:10,color:color?'rgba(255,255,255,.7)':'#666',marginTop:3}}>{sub}</div>}
+      <div style={{border:'var(--border)',borderRadius:4,padding:'10px 12px',boxShadow:'var(--shadow)',background:color||'var(--white)'}}>
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:9,textTransform:'uppercase',letterSpacing:'.05em',color:color?'rgba(255,255,255,.7)':'var(--text-sec)',marginBottom:4}}>{label}</div>
+        <div style={{fontFamily:'Unbounded,cursive',fontSize:18,fontWeight:900,color:color?'#fff':'var(--black)',lineHeight:1}}>{value}</div>
+        {sub && <div style={{fontSize:10,color:color?'rgba(255,255,255,.7)':'var(--text-sec)',marginTop:3}}>{sub}</div>}
       </div>
     );
 
@@ -2679,10 +2993,10 @@ function App() {
           <>
             <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:10}}>ДОЛЖНИКИ</div>
             {debtors.map(s => (
-              <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'12px',marginBottom:8,border:'2.5px solid #FF2D2D',borderRadius:4,background:'#fff5f5',boxShadow:'3px 3px 0 #FF2D2D'}}>
+              <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'12px',marginBottom:8,border:'2.5px solid var(--red)',borderRadius:4,background:'var(--bg-danger)',boxShadow:'3px 3px 0 var(--red)'}}>
                 <div style={{flex:1}}>
                   <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
-                  <div style={{fontFamily:'Unbounded,cursive',fontSize:16,fontWeight:900,color:'#FF2D2D'}}>{s.balance} ₽</div>
+                  <div style={{fontFamily:'Unbounded,cursive',fontSize:16,fontWeight:900,color:'var(--red)'}}>{s.balance} ₽</div>
                 </div>
                 <button className="btn btn-sm btn-green" onClick={() => quickPay(s.id)}>Оплатил</button>
               </div>
@@ -2763,10 +3077,10 @@ function App() {
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:16}}>
           {[['last_month','Прошлый мес.'],['current_month','Этот месяц'],['next_month','Следующий'],['all_time','Всё время']].map(([v,l]) => (
             <button key={v} onClick={() => setAnalyticsPeriod(v)}
-              style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'2.5px solid #0a0a0a',borderRadius:4,cursor:'pointer',
-                background: analyticsPeriod===v ? '#0a0a0a' : '#f5f0e8',
-                color: analyticsPeriod===v ? '#FFE500' : '#0a0a0a',
-                boxShadow: analyticsPeriod===v ? 'none' : '3px 3px 0 #0a0a0a'}}>
+              style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'var(--border)',borderRadius:4,cursor:'pointer',
+                background: analyticsPeriod===v ? 'var(--black)' : 'var(--white)',
+                color: analyticsPeriod===v ? 'var(--yellow)' : 'var(--black)',
+                boxShadow: analyticsPeriod===v ? 'none' : 'var(--shadow)'}}>
               {l}
             </button>
           ))}
@@ -2799,48 +3113,81 @@ function App() {
           <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:6}}>СТАТИСТИКА ПРОПУСКОВ (все время)</div>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <div>
-              <div style={{fontSize:11,color:'#666'}}>{totalScheduled} занятий запланировано</div>
-              <div style={{fontSize:11,color:'#666'}}>{totalSkipped} пропущено</div>
+              <div style={{fontSize:11,color:'var(--text-sec)'}}>{totalScheduled} занятий запланировано</div>
+              <div style={{fontSize:11,color:'var(--text-sec)'}}>{totalSkipped} пропущено</div>
             </div>
             <div style={{fontFamily:'Unbounded,cursive',fontSize:28,fontWeight:900,color:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853'}}>
               {Math.round(avgSkipRate*100)}%
             </div>
           </div>
           {/* Bar */}
-          <div style={{marginTop:10,height:10,background:'#e0e0e0',borderRadius:3,border:'1.5px solid #0a0a0a',overflow:'hidden'}}>
-            <div style={{height:'100%',width:`${Math.min(avgSkipRate*100,100)}%`,background:avgSkipRate>0.2?'#FF2D2D':avgSkipRate>0.1?'#FF8C00':'#00C853',transition:'width .3s'}}/>
+          <div style={{marginTop:10,height:10,background:'var(--border-light)',borderRadius:3,border:'1.5px solid var(--black)',overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${Math.min(avgSkipRate*100,100)}%`,background:avgSkipRate>0.2?'var(--red)':avgSkipRate>0.1?'#FF8C00':'var(--green)',transition:'width .3s'}}/>
           </div>
         </div>
 
         {/* Per-student breakdown */}
         <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ПО УЧЕНИКАМ (период)</div>
+
+        {/* ── SVG: Lesson load by day of week ── */}
+        {(() => {
+          const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+          const dayCounts = [0,0,0,0,0,0,0];
+          periodLessons.forEach(l => {
+            let dow = new Date(l.date+'T00:00:00').getDay();
+            dow = dow === 0 ? 6 : dow - 1;
+            dayCounts[dow]++;
+          });
+          const max = Math.max(...dayCounts, 1);
+          const barW = 28, gap = 8, h = 100;
+          const svgW = dayNames.length * (barW + gap);
+          return (
+            <div style={{border:'var(--border)',borderRadius:4,padding:'12px',marginBottom:16,background:'var(--white)',boxShadow:'var(--shadow)'}}>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:10}}>НАГРУЗКА ПО ДНЯМ</div>
+              <svg width="100%" viewBox={`0 0 ${svgW} ${h+24}`} style={{display:'block'}}>
+                {dayCounts.map((c, i) => {
+                  const barH = (c / max) * h;
+                  const x = i * (barW + gap);
+                  const clr = i >= 5 ? 'var(--red)' : 'var(--blue)';
+                  return (
+                    <g key={i}>
+                      <rect x={x} y={h - barH} width={barW} height={barH} rx={3} fill={clr} opacity={0.85}/>
+                      <text x={x + barW/2} y={h - barH - 4} textAnchor="middle" fontSize="9" fontFamily="Unbounded,cursive" fontWeight="700" fill="var(--black)">{c || ''}</text>
+                      <text x={x + barW/2} y={h + 14} textAnchor="middle" fontSize="9" fontFamily="Unbounded,cursive" fontWeight="700" fill="var(--text-sec)">{dayNames[i]}</text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          );
+        })()}
         {studentRows.length === 0 ? (
-          <div style={{textAlign:'center',padding:20,color:'#999',fontFamily:'Unbounded,cursive',fontSize:11}}>Нет данных за период</div>
+          <div style={{textAlign:'center',padding:20,color:'var(--text-muted)',fontFamily:'Unbounded,cursive',fontSize:11}}>Нет данных за период</div>
         ) : studentRows.map(s => {
           const skipRate = s.scheduled > 0 ? s.skipped / s.scheduled : 0;
           const ownSkip  = studentStats[s.id];
           const allTimeSkip = ownSkip.scheduled > 0 ? ownSkip.skipped / ownSkip.scheduled : 0;
           return (
-            <div key={s.id} style={{border:'2.5px solid #0a0a0a',borderRadius:4,padding:'10px 12px',marginBottom:8,boxShadow:'3px 3px 0 #0a0a0a',background:'#f5f0e8'}}>
+            <div key={s.id} style={{border:'var(--border)',borderRadius:4,padding:'10px 12px',marginBottom:8,boxShadow:'var(--shadow)',background:'var(--white)'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
                 <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
                 <div style={{display:'flex',gap:6}}>
-                  <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'#00C853'}}>{s.earned.toLocaleString()} ₽</span>
-                  {s.lost > 0 && <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'#FF2D2D'}}>-{s.lost.toLocaleString()} ₽</span>}
+                  <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'var(--green)'}}>{s.earned.toLocaleString()} ₽</span>
+                  {s.lost > 0 && <span style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,color:'var(--red)'}}>-{s.lost.toLocaleString()} ₽</span>}
                 </div>
               </div>
-              <div style={{display:'flex',gap:6,fontSize:10,color:'#666',marginBottom:6}}>
+              <div style={{display:'flex',gap:6,fontSize:10,color:'var(--text-sec)',marginBottom:6}}>
                 <span>{s.attended}/{s.scheduled} уроков</span>
                 <span>·</span>
-                <span style={{color:allTimeSkip>0.2?'#FF2D2D':allTimeSkip>0.1?'#FF8C00':'#00C853',fontWeight:700}}>
+                <span style={{color:allTimeSkip>0.2?'var(--red)':allTimeSkip>0.1?'#FF8C00':'var(--green)',fontWeight:700}}>
                   пропуск {Math.round(allTimeSkip*100)}% (всё время)
                 </span>
               </div>
               {/* Earned bar */}
-              <div style={{height:6,background:'#e0e0e0',borderRadius:3,border:'1px solid #ccc',overflow:'hidden'}}>
+              <div style={{height:6,background:'var(--border-light)',borderRadius:3,border:'1px solid var(--border-dashed)',overflow:'hidden'}}>
                 <div style={{height:'100%',display:'flex'}}>
-                  <div style={{width:`${s.scheduled>0?(s.attended/s.scheduled)*100:0}%`,background:'#00C853',transition:'width .3s'}}/>
-                  <div style={{flex:1,background:'#FF2D2D'}}/>
+                  <div style={{width:`${s.scheduled>0?(s.attended/s.scheduled)*100:0}%`,background:'var(--green)',transition:'width .3s'}}/>
+                  <div style={{flex:1,background:'var(--red)'}}/>
                 </div>
               </div>
             </div>
@@ -2873,14 +3220,63 @@ function App() {
         {tab==='finance'  && <PageFinance/>}
       </div>
 
-      {/* FAB — visible on today and schedule pages */}
-      {(tab==='today'||tab==='schedule') && (
-        <div className="fab" onClick={()=>setModal({type:'lesson',payload:{date:tab==='schedule'?selDate:getTodayDate()}})}>
+      {/* FAB — expandable */}
+      {(tab==='today'||tab==='schedule') && <>
+        {fabOpen && <div className="fab-overlay" onClick={()=>setFabOpen(false)}/>}
+        {fabOpen && (
+          <div className="fab-menu">
+            <div className="fab-item" style={{background:'var(--yellow)',color:'var(--black)'}}
+              onClick={()=>{setFabOpen(false);setModal({type:'lesson',payload:{date:tab==='schedule'?selDate:getTodayDate()}});}}>
+              <IcoCal size={16}/> Новый урок
+            </div>
+            <div className="fab-item" style={{background:'var(--green)',color:'var(--black)'}}
+              onClick={()=>{setFabOpen(false);setModal({type:'student',payload:null});}}>
+              <IcoUsers size={16}/> Новый ученик
+            </div>
+            <div className="fab-item" style={{background:'var(--blue)',color:'#fff'}}
+              onClick={()=>{setFabOpen(false);setModal({type:'transaction',payload:null});}}>
+              <IcoWallet size={16}/> Новая оплата
+            </div>
+          </div>
+        )}
+        <div className="fab" onClick={()=>setFabOpen(!fabOpen)}
+          style={{transform:fabOpen?'rotate(45deg)':'none',transition:'transform .2s'}}>
           <IcoPlus size={28}/>
+        </div>
+      </>}
+
+      {/* SEARCH */}
+      {showSearch && (
+        <SearchModal students={students} groups={groups} lessons={lessons}
+          onClose={()=>setShowSearch(false)}
+          onOpenStudent={s=>setModal({type:'studentDetail',payload:s})}
+          onOpenGroup={g=>setModal({type:'groupDetail',payload:g})}
+          onOpenLesson={l=>setModal({type:l.status==='planned'||l.status==='completed'?'attendance':'lessonStatus',payload:l})}
+        />
+      )}
+
+      {/* NOTIFICATION DROPDOWN */}
+      {showNotifs && (
+        <div style={{position:'fixed',inset:0,zIndex:199}} onClick={()=>setShowNotifs(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{
+            position:'fixed',right:16,top:60,width:300,maxHeight:400,overflowY:'auto',
+            background:'var(--white)',border:'var(--border)',borderRadius:4,
+            boxShadow:'var(--shadow-lg)',zIndex:200,padding:8
+          }}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,padding:'8px 8px 4px',color:'var(--text-sec)'}}>УВЕДОМЛЕНИЯ</div>
+            {notifications.length===0 ? (
+              <div style={{padding:16,textAlign:'center',fontSize:12,color:'var(--text-muted)'}}>Всё отлично! 🎉</div>
+            ) : notifications.map(n=>(
+              <div key={n.id} style={{display:'flex',gap:10,alignItems:'center',padding:'8px',borderBottom:'1px solid var(--border-light)'}}>
+                <span style={{fontSize:18}}>{n.icon}</span>
+                <div><div style={{fontSize:12,fontWeight:600}}>{n.text}</div>{n.sub&&<div style={{fontSize:10,color:'var(--text-sec)'}}>{n.sub}</div>}</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* BOTTOM NAV */}
+      {/* NAV BAR */}
       <nav className="navbar">
         {[
           {id:'today',    icon:<IcoHome/>,    label:'Сегодня'},
@@ -2888,10 +3284,18 @@ function App() {
           {id:'students', icon:<IcoUsers/>,   label:'Ученики'},
           {id:'finance',  icon:<IcoWallet/>,  label:'Финансы'},
         ].map(({id,icon,label}) => (
-          <button key={id} className={`nav-btn ${tab===id?'active':''}`} onClick={()=>setTab(id)}>
+          <button key={id} className={`nav-btn ${tab===id?'active':''}`} onClick={()=>{setTab(id);setFabOpen(false);}}>
             {icon}<span>{label}</span>
           </button>
         ))}
+        <button className="nav-btn" onClick={()=>setShowSearch(true)} title="Поиск">
+          <IcoSearch size={20}/><span>Поиск</span>
+        </button>
+        <button className="nav-btn" onClick={()=>setShowNotifs(!showNotifs)} title="Уведомления" style={{position:'relative'}}>
+          <IcoStar size={20}/>
+          {notifications.length>0 && <span className="notif-dot"/>}
+          <span>Ещё</span>
+        </button>
       </nav>
 
       {/* MODALS */}
@@ -2978,7 +3382,7 @@ function LessonCard({ lesson, name, onEdit, onAttend, onStatus, onDelete, compac
   const statusInfo = LESSON_STATUS[lesson.status] || LESSON_STATUS.planned;
   return (
     <div className="lesson-card" style={{opacity:done ? .75 : 1}}>
-      <div className="lesson-time" style={{background:done?'#333':'#0a0a0a',minWidth:compact?52:62,fontSize:compact?12:14}}>
+      <div className="lesson-time" style={{background:done?'#333':'var(--black)',minWidth:compact?52:62,fontSize:compact?12:14}}>
         <span>{lesson.time}</span>
         {lesson.duration && lesson.duration !== 60 && (
           <span style={{fontSize:8,color:'#bbb',marginTop:1}}>{lesson.duration < 60 ? `${lesson.duration}м` : lesson.duration === 90 ? '1.5ч' : lesson.duration === 120 ? '2ч' : `${lesson.duration}м`}</span>
@@ -2988,14 +3392,14 @@ function LessonCard({ lesson, name, onEdit, onAttend, onStatus, onDelete, compac
       <div className="lesson-body">
         <div className="lesson-name" style={{fontSize:compact?11:12}}>{name}</div>
         <div>
-          <span className="lesson-tag" style={{background:lesson.type==='group'?'#0057FF':'#FFE500',color:lesson.type==='group'?'#fff':'#0a0a0a'}}>
+          <span className="lesson-tag" style={{background:lesson.type==='group'?'var(--blue)':'var(--yellow)',color:lesson.type==='group'?'#fff':'var(--black)'}}>
             {lesson.type==='group'?'Группа':'Инд.'}
           </span>
-          <span className="lesson-tag" style={{marginLeft:5,background:subjectColor(lesson.subject || 'История'),color:(lesson.subject==='Общество'||lesson.subject==='Математика')?'#0a0a0a':'#fff'}}>
+          <span className="lesson-tag" style={{marginLeft:5,background:subjectColor(lesson.subject || 'История'),color:(lesson.subject==='Общество'||lesson.subject==='Математика')?'var(--black)':'#fff'}}>
             {lesson.subject || 'История'}
           </span>
-          {lesson.seriesId && <span className="lesson-tag" style={{marginLeft:5,background:'#fff',color:'#0a0a0a'}}>серия</span>}
-          {lesson.homework && <span className="lesson-tag" style={{marginLeft:5,background:'#00C853',color:'#0a0a0a'}}>ДЗ</span>}
+          {lesson.seriesId && <span className="lesson-tag" style={{marginLeft:5,background:'var(--white)',color:'var(--black)'}}>серия</span>}
+          {lesson.homework && <span className="lesson-tag" style={{marginLeft:5,background:'var(--green)',color:'var(--black)'}}>ДЗ</span>}
           {lesson.status !== 'planned' && (
             <span className="lesson-tag" style={{marginLeft:5,background:statusInfo.color,color:'#fff'}}>{statusInfo.label}</span>
           )}
@@ -3030,6 +3434,13 @@ function LessonCard({ lesson, name, onEdit, onAttend, onStatus, onDelete, compac
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+// ── PWA: Service Worker Registration ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

@@ -456,7 +456,7 @@ const money = (n) => `${Number(n || 0).toLocaleString('ru-RU')} ₽`;
 const cloneDemoState = () => ({
   students: mockStudents.map(s => ({...s, subjects:['История','Общество'], archived:false, packageLessons:0, goal:'', notes:'', lessonRates:{}, tgId:''})),
   groups: mockGroups.map(g => ({...g, subject:g.subject || 'История', studentIds:[...g.studentIds], rateOverrides:{...(g.rateOverrides||{})}, archived:false})),
-  lessons: mockLessons.map(l => ({...l, subject:l.subject || 'История', topic:'', homework:'', lessonNote:'', packageUse:{}})),
+  lessons: mockLessons.map(l => ({...l, subject:l.subject || 'История', topic:'', homework:'', lessonNote:'', duration:60, packageUse:{}})),
   txs: [],
   settings: { theme:'light' },
 });
@@ -474,7 +474,7 @@ const loadSavedState = () => {
     const lessons = (data.lessons || []).map(l => {
       const group = l.type === 'group' ? groups.find(g => g.id === l.targetId) : null;
       const lessonSubject = group?.subject || l.subject || inferSubject(group?.name);
-      return {subject:lessonSubject, topic:'', homework:'', lessonNote:'', packageUse:{}, ...l, subject:lessonSubject};
+      return {subject:lessonSubject, topic:'', homework:'', lessonNote:'', packageUse:{}, duration:60, ...l, subject:lessonSubject};
     });
     const students = (data.students || []).map(s => {
       const groupSubjects = groups.filter(g => g.studentIds?.includes(s.id)).map(g => g.subject);
@@ -795,6 +795,7 @@ function LessonModal({ students, groups, initialDate, initialStudentId, lessonTo
   const [topic, setTopic] = useState(lessonToEdit?.topic || '');
   const [homework, setHomework] = useState(lessonToEdit?.homework || '');
   const [lessonNote, setLessonNote] = useState(lessonToEdit?.lessonNote || '');
+  const [duration, setDuration] = useState(lessonToEdit?.duration || 60);
   const activeGroups = groups.filter(g => !g.archived || lessonToEdit?.targetId === g.id);
   const activeStudents = students.filter(s => !s.archived || lessonToEdit?.targetId === s.id || initialStudentId === s.id);
 
@@ -824,7 +825,7 @@ function LessonModal({ students, groups, initialDate, initialStudentId, lessonTo
   const submit = (e) => {
     e.preventDefault();
     if (!targetId) return;
-    const base = { type, targetId: Number(targetId), subject, time, topic, homework, lessonNote };
+    const base = { type, targetId: Number(targetId), subject, time, duration: Number(duration), topic, homework, lessonNote };
     if (lessonToEdit) { onSave([{...base, date}], {applySeries}); return; }
     const arr = [];
     const seriesId = (recurring || days.length > 1) ? Date.now() : null;
@@ -866,6 +867,18 @@ function LessonModal({ students, groups, initialDate, initialStudentId, lessonTo
           <div><label className="label">{lessonToEdit?'Дата':'Дата начала'}</label><input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></div>
           <div><label className="label">Время</label><input className="input" type="time" required value={time} onChange={e=>setTime(e.target.value)}/></div>
         </div>
+        <FormField label="Длительность">
+          <div style={{display:'flex',gap:6}}>
+            {[30,45,60,90,120].map(d => (
+              <button key={d} type="button"
+                onClick={()=>setDuration(d)}
+                className={`btn btn-sm ${duration===d ? 'btn-black' : 'btn-white'}`}
+                style={{flex:1,padding:'7px 2px',fontSize:10,fontFamily:'Unbounded,cursive',fontWeight:700}}>
+                {d<60 ? `${d}м` : d===60 ? '1ч' : d===90 ? '1.5ч' : '2ч'}
+              </button>
+            ))}
+          </div>
+        </FormField>
         <FormField label="Тема урока"><input className="input" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Например: реформы Петра I"/></FormField>
         <FormField label="Домашка"><textarea className="input" value={homework} onChange={e=>setHomework(e.target.value)} placeholder="Что сделать к следующему уроку" style={{minHeight:70,resize:'vertical'}}/></FormField>
         <FormField label="Заметка после урока"><textarea className="input" value={lessonNote} onChange={e=>setLessonNote(e.target.value)} placeholder="Что получилось, что повторить" style={{minHeight:70,resize:'vertical'}}/></FormField>
@@ -1786,6 +1799,43 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  const exportJson = () => {
+    const snapshot = { version: STORAGE_VERSION, exportedAt: new Date().toISOString(), students, groups, lessons, txs, settings };
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tutor-backup-${getTodayDate()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importJson = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!data.students || !data.lessons) { alert('Файл не распознан — нет данных об учениках или уроках'); return; }
+          const date = data.exportedAt ? new Date(data.exportedAt).toLocaleString('ru-RU') : 'неизвестная дата';
+          if (!confirm(`Загрузить бэкап от ${date}?\n\nТекущие данные будут полностью заменены.`)) return;
+          setStudents(data.students || []);
+          setGroups(data.groups || []);
+          setLessons(data.lessons || []);
+          setTxs(data.txs || []);
+          if (data.settings) setSettings(data.settings);
+        } catch { alert('Не удалось прочитать файл — возможно, он повреждён.'); }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
   const exportSchedulePdf = (fromDate, toDate) => {
     const filtered = lessons
       .filter(l => l.date >= fromDate && l.date <= toDate)
@@ -2130,7 +2180,10 @@ function App() {
                                       ) : null;
                                     })()}
                                     <div style={{wordBreak:'break-word'}}>{shortName}</div>
-                                    <div style={{fontSize:8, opacity:.8}}>{statusInfo.short}</div>
+                                    <div style={{fontSize:8,opacity:.8,display:'flex',justifyContent:'space-between'}}>
+                                      <span>{statusInfo.short}</span>
+                                      {l.duration && l.duration !== 60 && <span>{l.duration < 60 ? `${l.duration}м` : l.duration === 90 ? '1.5ч' : '2ч'}</span>}
+                                    </div>
                                   </div>
                                 );
                               })}
@@ -2167,7 +2220,10 @@ function App() {
                   const hasDebt = stList.some(s=>s.balance<0);
                   return (
                   <div key={l.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderTop:'1.5px solid #e0e0e0'}}>
-                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{l.time}</div>
+                    <div style={{fontFamily:'Unbounded,cursive',fontSize:14,fontWeight:900,minWidth:48,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>
+                      <div>{l.time}</div>
+                      {l.duration && l.duration !== 60 && <div style={{fontSize:9,fontWeight:400,color:'#888',marginTop:1}}>{l.duration < 60 ? `${l.duration}м` : l.duration === 90 ? '1.5ч' : '2ч'}</div>}
+                    </div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:700,lineHeight:1.3,color:isFinalLesson(l)?'#999':'#0a0a0a'}}>{getLessonName(l)}</div>
                       {hasDebt && <div style={{fontSize:9,color:'#FF2D2D',fontFamily:'Unbounded,cursive',fontWeight:700,marginTop:2}}>● ДОЛГ</div>}
@@ -2425,7 +2481,6 @@ function App() {
                   </div>
                 </div>
                 <div style={{display:'flex',gap:6,marginLeft:8,alignItems:'center'}}>
-                  <button title="Карточка" style={{background:'none',border:'none',cursor:'pointer',padding:6}} onClick={(e)=>{e.stopPropagation();setModal({type:'studentDetail',payload:s});}}><IcoBook size={18}/></button>
                   {s.phone && (
                     <a href={`tel:${s.phone}`} title={s.phone}
                       className="btn btn-sm btn-white"
@@ -2691,6 +2746,14 @@ function App() {
           <button className="btn btn-sm btn-white btn-full" onClick={exportCsv}>Экспорт CSV</button>
           <button className="btn btn-sm btn-red btn-full" onClick={resetDemoData}>Сброс демо</button>
         </div>
+        <div style={{marginTop:8,padding:'12px',border:'2.5px solid #0a0a0a',borderRadius:4,background:'#fffde0',boxShadow:'3px 3px 0 #0a0a0a'}}>
+          <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:4}}>💾 БЭКАП ДАННЫХ</div>
+          <div style={{fontSize:11,color:'#666',marginBottom:10,lineHeight:1.5}}>Сохраняй бэкап раз в неделю — данные хранятся в браузере и могут пропасть при очистке кэша.</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            <button className="btn btn-sm btn-black btn-full" onClick={exportJson}>⬇ Скачать бэкап</button>
+            <button className="btn btn-sm btn-white btn-full" onClick={importJson}>⬆ Загрузить бэкап</button>
+          </div>
+        </div>
       </div>
     );
 
@@ -2917,6 +2980,9 @@ function LessonCard({ lesson, name, onEdit, onAttend, onStatus, onDelete, compac
     <div className="lesson-card" style={{opacity:done ? .75 : 1}}>
       <div className="lesson-time" style={{background:done?'#333':'#0a0a0a',minWidth:compact?52:62,fontSize:compact?12:14}}>
         <span>{lesson.time}</span>
+        {lesson.duration && lesson.duration !== 60 && (
+          <span style={{fontSize:8,color:'#bbb',marginTop:1}}>{lesson.duration < 60 ? `${lesson.duration}м` : lesson.duration === 90 ? '1.5ч' : lesson.duration === 120 ? '2ч' : `${lesson.duration}м`}</span>
+        )}
         {done && <span style={{fontSize:8,color:'#ddd',marginTop:2}}>{statusInfo.short}</span>}
       </div>
       <div className="lesson-body">

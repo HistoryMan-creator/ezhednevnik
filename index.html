@@ -1179,8 +1179,10 @@ function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
   const [topic, setTopic] = useState(lesson.topic || '');
   const [homework, setHomework] = useState(lesson.homework || '');
   const [lessonNote, setLessonNote] = useState(lesson.lessonNote || '');
+  const [rating, setRating] = useState(lesson.rating || 0);
+  const [hoverRating, setHoverRating] = useState(0);
 
-  const submit = (e) => { e.preventDefault(); onSave(lesson.id, att, {topic, homework, lessonNote}); };
+  const submit = (e) => { e.preventDefault(); onSave(lesson.id, att, {topic, homework, lessonNote, rating}); };
 
   return (
     <Modal title="Посещаемость" onClose={onClose}>
@@ -1192,6 +1194,26 @@ function AttendanceModal({ lesson, students, groups, onClose, onSave }) {
         <FormField label="Тема"><input className="input" value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Что проходили"/></FormField>
         <FormField label="Домашка"><textarea className="input" value={homework} onChange={e=>setHomework(e.target.value)} placeholder="Что задать" style={{minHeight:64,resize:'vertical'}}/></FormField>
         <FormField label="Заметка"><textarea className="input" value={lessonNote} onChange={e=>setLessonNote(e.target.value)} placeholder="Что важно помнить" style={{minHeight:64,resize:'vertical'}}/></FormField>
+        <div style={{marginBottom:14}}>
+          <label className="label">Оценка урока</label>
+          <div style={{display:'flex',gap:6,alignItems:'center'}}>
+            {[1,2,3,4,5].map(n => (
+              <button key={n} type="button"
+                onMouseEnter={()=>setHoverRating(n)}
+                onMouseLeave={()=>setHoverRating(0)}
+                onClick={()=>setRating(rating===n?0:n)}
+                style={{background:'none',border:'none',cursor:'pointer',padding:'4px 2px',fontSize:26,lineHeight:1,
+                  color:(hoverRating||rating)>=n?'#FFE500':'var(--border-dashed)',
+                  textShadow:(hoverRating||rating)>=n?'0 0 0 #0a0a0a':undefined,
+                  transition:'color .1s',filter:(hoverRating||rating)>=n?'drop-shadow(0 0 2px rgba(0,0,0,.3))':'none'}}>
+                ★
+              </button>
+            ))}
+            {rating > 0 && <span style={{fontSize:11,color:'var(--text-sec)',marginLeft:4}}>
+              {['','Слабо','Ниже среднего','Норм','Хорошо','Отлично'][rating]}
+            </span>}
+          </div>
+        </div>
         {ls.map(s => {
           const rate = group?.rateOverrides?.[s.id] ?? s.rate;
           const present = att[s.id] || false;
@@ -1312,6 +1334,36 @@ function StudentDetailModal({ student, lessons, txs, groups, students, onClose, 
         </div>
       ))}
       {ownLessons.filter(l=>l.status==='planned').length === 0 && <div style={{fontSize:11,color:'#888'}}>Нет будущих уроков</div>}
+
+      {(() => {
+        const ratedLessons = ownLessons.filter(l => l.status === 'completed' && l.rating > 0).slice(0, 12);
+        if (ratedLessons.length < 2) return null;
+        const avg = ratedLessons.reduce((s,l) => s + l.rating, 0) / ratedLessons.length;
+        return (
+          <div style={{margin:'14px 0 0'}}>
+            <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span>ПРОГРЕСС</span>
+              <span style={{color:'var(--text-sec)',fontSize:10}}>ср. {avg.toFixed(1)} / 5</span>
+            </div>
+            <div style={{border:'var(--border)',borderRadius:4,padding:'10px 12px',background:'var(--white)',boxShadow:'var(--shadow)'}}>
+              <div style={{display:'flex',alignItems:'flex-end',gap:4,height:50}}>
+                {ratedLessons.slice().reverse().map((l,i) => (
+                  <div key={l.id} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                    <div style={{width:'100%',background:l.rating>=4?'var(--green)':l.rating>=3?'#FF8C00':'var(--red)',
+                      borderRadius:'2px 2px 0 0',height:`${(l.rating/5)*44}px`,transition:'height .3s'}}/>
+                    <span style={{fontSize:8,color:'var(--text-muted)',fontFamily:'Martian Mono,monospace'}}>
+                      {new Date(l.date+'T00:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'numeric'})}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',marginTop:6}}>
+                {[1,2,3,4,5].map(n=><span key={n} style={{fontSize:9,color:'var(--text-muted)'}}>{'★'.repeat(n)}</span>)}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,margin:'14px 0 8px'}}>ОПЕРАЦИИ</div>
       {studentTxs.map(tx => (
@@ -2215,14 +2267,20 @@ function App() {
         </div>
 
         {/* Stats row */}
-        <div className="stat-row">
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10,marginBottom:12}}>
           <div className="stat-card" style={{background:'var(--black)',color:'var(--yellow)'}}>
-            <div className="stat-label" style={{color:'var(--text-muted)'}}>Уроков сегодня</div>
-            <div className="stat-value">{todayLessons.length}</div>
+            <div className="stat-label" style={{color:'var(--text-muted)'}}>Уроков</div>
+            <div className="stat-value" style={{fontSize:20}}>{todayLessons.length}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">Учеников</div>
-            <div className="stat-value">{activeStudents.length}</div>
+            <div className="stat-value" style={{fontSize:20}}>{activeStudents.length}</div>
+          </div>
+          <div className="stat-card" style={{background:chargedToday>0?'var(--green)':'var(--white)'}}>
+            <div className="stat-label" style={{color:chargedToday>0?'rgba(0,0,0,.6)':'var(--text-sec)'}}>Заработано</div>
+            <div className="stat-value" style={{fontSize:chargedToday>=10000?14:chargedToday>0?16:20,color:chargedToday>0?'#fff':'var(--black)',lineHeight:1.2}}>
+              {chargedToday>0?money(chargedToday):'—'}
+            </div>
           </div>
         </div>
 
@@ -2893,6 +2951,8 @@ function App() {
     const [analyticsPeriod, setAnalyticsPeriod] = useState('current_month');
     const [txStudentFilter, setTxStudentFilter] = useState('all');
     const [txTypeFilter, setTxTypeFilter] = useState('all');
+    const [customFrom, setCustomFrom] = useState(() => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; });
+    const [customTo, setCustomTo] = useState(getTodayDate);
 
     const activeStudents = students.filter(s => !s.archived);
     const debt    = activeStudents.filter(s => s.balance < 0).reduce((s, st) => s + Math.abs(st.balance), 0);
@@ -2918,6 +2978,7 @@ function App() {
       if (p === 'current_month') return { start: new Date(y,m,1), end: new Date(y,m+1,0,23,59,59) };
       if (p === 'last_month')    return { start: new Date(y,m-1,1), end: new Date(y,m,0,23,59,59) };
       if (p === 'next_month')    return { start: new Date(y,m+1,1), end: new Date(y,m+2,0,23,59,59) };
+      if (p === 'custom')        return { start: new Date(customFrom+'T00:00:00'), end: new Date(customTo+'T23:59:59') };
       return { start: new Date(2000,0,1), end: new Date(2100,0,1) };
     };
     const bounds = getPeriodBounds(analyticsPeriod);
@@ -3037,11 +3098,12 @@ function App() {
           <>
             <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:10}}>ДОЛЖНИКИ</div>
             {debtors.map(s => (
-              <div key={s.id} style={{display:'flex',alignItems:'center',gap:10,padding:'12px',marginBottom:8,border:'2.5px solid var(--red)',borderRadius:4,background:'var(--bg-danger)',boxShadow:'3px 3px 0 var(--red)'}}>
+              <div key={s.id} style={{display:'flex',alignItems:'center',gap:8,padding:'12px',marginBottom:8,border:'2.5px solid var(--red)',borderRadius:4,background:'var(--bg-danger)',boxShadow:'3px 3px 0 var(--red)'}}>
                 <div style={{flex:1}}>
                   <div style={{fontFamily:'Unbounded,cursive',fontWeight:900,fontSize:12}}>{s.name}</div>
                   <div style={{fontFamily:'Unbounded,cursive',fontSize:16,fontWeight:900,color:'var(--red)'}}>{s.balance} ₽</div>
                 </div>
+                <button className="btn btn-sm btn-white" style={{padding:'6px 9px',fontSize:14}} title="Написать напоминание" onClick={() => setModal({type:'message',payload:{student:s}})}>✉</button>
                 <button className="btn btn-sm btn-green" onClick={() => quickPay(s.id)}>Оплатил</button>
               </div>
             ))}
@@ -3118,7 +3180,7 @@ function App() {
     const AnalyticsTab = () => (
       <div>
         {/* Period selector */}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:16}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:6}}>
           {[['last_month','Прошлый мес.'],['current_month','Этот месяц'],['next_month','Следующий'],['all_time','Всё время']].map(([v,l]) => (
             <button key={v} onClick={() => setAnalyticsPeriod(v)}
               style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'var(--border)',borderRadius:4,cursor:'pointer',
@@ -3128,7 +3190,21 @@ function App() {
               {l}
             </button>
           ))}
+          <button onClick={() => setAnalyticsPeriod('custom')}
+            style={{fontFamily:'Unbounded,cursive',fontSize:9,fontWeight:700,padding:'8px 6px',border:'var(--border)',borderRadius:4,cursor:'pointer',gridColumn:'1/-1',
+              background: analyticsPeriod==='custom' ? 'var(--blue)' : 'var(--white)',
+              color: analyticsPeriod==='custom' ? '#fff' : 'var(--black)',
+              boxShadow: analyticsPeriod==='custom' ? 'none' : 'var(--shadow)'}}>
+            Свой период
+          </button>
         </div>
+        {analyticsPeriod === 'custom' && (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12,padding:'10px',border:'var(--border)',borderRadius:4,background:'var(--bg-subtle)'}}>
+            <div><label className="label" style={{fontSize:9}}>С</label><input className="input" type="date" value={customFrom} onChange={e=>setCustomFrom(e.target.value)} style={{padding:'6px 8px',fontSize:12}}/></div>
+            <div><label className="label" style={{fontSize:9}}>По</label><input className="input" type="date" value={customTo} onChange={e=>setCustomTo(e.target.value)} style={{padding:'6px 8px',fontSize:12}}/></div>
+          </div>
+        )}
+        <div style={{marginBottom:16}}/>
 
         {/* Key metrics */}
         <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ИТОГ ПЕРИОДА</div>
@@ -3172,6 +3248,55 @@ function App() {
 
         {/* Per-student breakdown */}
         <div style={{fontFamily:'Unbounded,cursive',fontSize:11,fontWeight:900,marginBottom:10}}>ПО УЧЕНИКАМ (период)</div>
+
+        {/* ── Weekly income chart ── */}
+        {analyticsPeriod !== 'all_time' && (() => {
+          const weekMap = {};
+          periodCompleted.forEach(lesson => {
+            const d = new Date(lesson.date+'T00:00:00');
+            const dow = d.getDay()||7;
+            const mon = new Date(d); mon.setDate(d.getDate()-dow+1);
+            const key = mon.toISOString().slice(0,10);
+            const grp = lesson.type === 'group' ? groups.find(g => g.id === lesson.targetId) : null;
+            const ls = lesson.type === 'individual'
+              ? [students.find(s => s.id === lesson.targetId)].filter(Boolean)
+              : (grp?.studentIds.map(id => students.find(s => s.id === id)).filter(Boolean) || []);
+            ls.forEach(s => {
+              const rate = grp?.rateOverrides?.[s.id] ?? s.rate;
+              const present = lesson.status !== 'no_show' && lesson.attendance?.[s.id] !== false;
+              if (present) weekMap[key] = (weekMap[key] || 0) + rate;
+            });
+          });
+          const weeks = Object.keys(weekMap).sort();
+          if (weeks.length < 2) return null;
+          const maxVal = Math.max(...weeks.map(w=>weekMap[w]), 1);
+          const barW = Math.max(20, Math.min(48, Math.floor(260/weeks.length)-6));
+          const gap = 6; const h = 80;
+          const svgW = weeks.length * (barW + gap);
+          return (
+            <div style={{border:'var(--border)',borderRadius:4,padding:'12px',marginBottom:16,background:'var(--white)',boxShadow:'var(--shadow)'}}>
+              <div style={{fontFamily:'Unbounded,cursive',fontSize:10,fontWeight:900,marginBottom:10}}>ДОХОД ПО НЕДЕЛЯМ</div>
+              <div style={{overflowX:'auto'}}>
+                <svg width="100%" viewBox={`0 0 ${Math.max(svgW,200)} ${h+32}`} style={{display:'block',minWidth:`${svgW}px`}}>
+                  {weeks.map((w, i) => {
+                    const val = weekMap[w] || 0;
+                    const barH = (val / maxVal) * h;
+                    const x = i * (barW + gap);
+                    const weekNum = new Date(w+'T00:00:00');
+                    const label = weekNum.toLocaleDateString('ru-RU',{day:'numeric',month:'numeric'});
+                    return (
+                      <g key={w}>
+                        <rect x={x} y={h - barH} width={barW} height={barH} rx={3} fill="var(--blue)" opacity={0.85}/>
+                        {val > 0 && <text x={x + barW/2} y={h - barH - 4} textAnchor="middle" fontSize="8" fontFamily="Unbounded,cursive" fontWeight="700" fill="var(--black)">{Math.round(val/1000)}к</text>}
+                        <text x={x + barW/2} y={h + 14} textAnchor="middle" fontSize="8" fontFamily="Martian Mono,monospace" fill="var(--text-sec)">{label}</text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── SVG: Lesson load by day of week ── */}
         {(() => {

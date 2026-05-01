@@ -93,7 +93,7 @@ body[data-theme="dark"] .nav-btn { color: #7d786f; border-right-color: #27241f; 
 body[data-theme="dark"] .nav-btn.active { color: var(--yellow); }
 
 /* MAIN */
-.main { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; transition: opacity .2s ease; }
+.main { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; transition: opacity .2s ease; overflow-x: hidden; }
 
 /* CARDS */
 .card {
@@ -386,6 +386,10 @@ body[data-theme="dark"] .badge-yellow {
   .sched-mobile{display:block!important}
   .btn-sm{min-height:40px;padding:10px 12px}
   .today-desktop-grid{display:block!important}
+  .day-strip{gap:4px}
+  .day-btn{min-width:40px!important;padding:6px 2px}
+  .day-btn-name{font-size:9px}
+  .day-btn-date{font-size:13px}
 }
 @media(min-width:769px){
   .sched-mobile{display:none!important}
@@ -1409,8 +1413,12 @@ function MessageModal({ student, lesson, groups, lessons, templates, onClose, on
     setCopied(true); setTimeout(()=>setCopied(false),2000);
   };
 
-  const openTg = () => {
+  const openTg = async () => {
     if (!student.tgId) return;
+    // Copy text to clipboard before opening TG
+    try { await navigator.clipboard.writeText(text); }
+    catch { const a=document.createElement('textarea');a.value=text;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove(); }
+    setCopied(true); setTimeout(()=>setCopied(false),2000);
     const id = String(student.tgId).trim();
     window.open(id.startsWith('@') ? `https://t.me/${id.slice(1)}` : `https://t.me/${id}`, '_blank');
   };
@@ -2238,13 +2246,31 @@ function App() {
         {attention.length > 0 && (
           <div className="card" style={{padding:12,marginBottom:16}}>
             <div style={{fontFamily:'Unbounded,cursive',fontSize:12,fontWeight:900,marginBottom:8}}>ТРЕБУЕТ ВНИМАНИЯ</div>
-            {attention.map((item,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:i?'1px solid var(--border-light)':'none'}}>
+            {attention.map((item,i)=>{
+              const phoneClean = (item.student.phone || '').replace(/\s/g,'');
+              return (
+              <div key={i} style={{display:'flex',alignItems:'center',gap:6,padding:'7px 0',borderTop:i?'1px solid var(--border-light)':'none'}}>
                 <span className={`badge ${item.kind==='Долг'?'badge-red':item.kind==='Абонемент'?'badge-yellow':'badge-green'}`}>{item.kind}</span>
                 <div style={{fontSize:12,flex:1}}>{item.text}</div>
-                <button className="btn btn-sm btn-white" onClick={()=>setModal({type:'message',payload:{student:item.student}})}>Текст</button>
+                {item.student.phone && (
+                  <a href={`tel:${phoneClean}`} className="btn btn-sm btn-white" style={{padding:'4px 7px',textDecoration:'none',color:'inherit',minHeight:'auto'}}
+                    onClick={e=>e.stopPropagation()} title="Позвонить">
+                    <IcoPhone size={14}/>
+                  </a>
+                )}
+                {item.student.tgId && (
+                  <button className="btn btn-sm btn-blue" style={{padding:'4px 7px',minHeight:'auto'}}
+                    onClick={()=>{
+                      const id=String(item.student.tgId).trim();
+                      window.open(id.startsWith('@')?`https://t.me/${id.slice(1)}`:`https://t.me/${id}`,'_blank');
+                    }} title="Telegram">
+                    <IcoTg size={14}/>
+                  </button>
+                )}
+                <button className="btn btn-sm btn-white" style={{minHeight:'auto'}} onClick={()=>setModal({type:'message',payload:{student:item.student}})}>Текст</button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -2698,16 +2724,34 @@ function App() {
           </div>
         </div>
 
-        <div className="day-strip" style={{marginBottom:14}}>
-          <button className={`day-btn ${schedSubject==='all'?'active':''}`} onClick={()=>setSchedSubject('all')} style={{minWidth:82}}>
-            <span className="day-btn-name">Все</span>
-          </button>
-          {SUBJECTS.map(subject=>(
-            <button key={subject} className={`day-btn ${schedSubject===subject?'active':''}`} onClick={()=>setSchedSubject(subject)} style={{minWidth:96}}>
-              <span className="day-btn-name">{subject}</span>
-            </button>
-          ))}
-        </div>
+        {/* Show only subjects that students have this week */}
+        {(() => {
+          const getWeekDatesForFilter = (offset) => {
+            const today = new Date();
+            const dow = today.getDay() || 7;
+            const mon = new Date(today);
+            mon.setDate(today.getDate() - dow + 1 + offset * 7);
+            return Array.from({length:7}, (_,i) => {
+              const d = new Date(mon); d.setDate(mon.getDate() + i);
+              return localDateString(d);
+            });
+          };
+          const wDates = schedView === 'week' ? getWeekDatesForFilter(weekOffset) : null;
+          const weekLessonsAll = wDates ? lessons.filter(l => wDates.includes(l.date)) : lessons;
+          const weekSubjects = [...new Set(weekLessonsAll.map(l => getLessonSubject(l, groups)))].filter(s => SUBJECTS.includes(s));
+          return (
+            <div className="day-strip" style={{marginBottom:14}}>
+              <button className={`day-btn ${schedSubject==='all'?'active':''}`} onClick={()=>setSchedSubject('all')} style={{minWidth:82}}>
+                <span className="day-btn-name">Все</span>
+              </button>
+              {weekSubjects.map(subject=>(
+                <button key={subject} className={`day-btn ${schedSubject===subject?'active':''}`} onClick={()=>setSchedSubject(subject)} style={{minWidth:96}}>
+                  <span className="day-btn-name">{subject}</span>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
 
         {schedView==='week' ? <WeekView/> : <MonthView/>}
       </div>
@@ -3288,14 +3332,6 @@ function App() {
             {icon}<span>{label}</span>
           </button>
         ))}
-        <button className="nav-btn" onClick={()=>setShowSearch(true)} title="Поиск">
-          <IcoSearch size={20}/><span>Поиск</span>
-        </button>
-        <button className="nav-btn" onClick={()=>setShowNotifs(!showNotifs)} title="Уведомления" style={{position:'relative'}}>
-          <IcoStar size={20}/>
-          {notifications.length>0 && <span className="notif-dot"/>}
-          <span>Ещё</span>
-        </button>
       </nav>
 
       {/* MODALS */}
